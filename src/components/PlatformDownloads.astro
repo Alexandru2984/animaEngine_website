@@ -1,0 +1,316 @@
+---
+/**
+ * The downloads for one operating system from the latest stable release.
+ * Rendered at build time: works without JavaScript. Links point straight at
+ * the files on GitHub Releases; nothing starts until the visitor clicks.
+ */
+import Icon from './Icon.astro';
+import StatusBadge from './StatusBadge.astro';
+import CopyButton from './CopyButton.astro';
+import { ARCH_LABELS, type DownloadOption, type PlatformOS } from '../lib/downloads';
+import { formatBytes } from '../lib/format';
+import { OS_INFO } from '../lib/site-downloads';
+import { links } from '../data/site';
+
+interface Props {
+  os: PlatformOS;
+  options: DownloadOption[];
+  version: string | null;
+  releasesUrl: string;
+  /** Full detail (file names, checksums) or a compact card. */
+  detail?: 'full' | 'compact';
+  headingLevel?: 2 | 3;
+}
+
+const { os, options, version, releasesUrl, detail = 'full', headingLevel = 3 } = Astro.props;
+const info = OS_INFO[os];
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : 'terminal';
+---
+
+<section class:list={['platform', `platform-${os}`, detail]} id={`downloads-${os}`} data-platform={os} aria-labelledby={`downloads-${os}-title`}>
+  <header class="head">
+    <span class="os-icon"><Icon name={icon} /></span>
+    <div class="head-text">
+      <Heading id={`downloads-${os}-title`}>{info.name}</Heading>
+      <StatusBadge status={info.status} />
+    </div>
+    <span class="detected-tag" data-detected-tag hidden>Your system</span>
+  </header>
+
+  {
+    options.length > 0 ? (
+      <ul class="options">
+        {options.map((option, i) => (
+          <li class="option" id={`dl-${option.id}`}>
+            <div class="option-text">
+              <span class="option-label">{option.label}</span>
+              <span class="option-summary">{option.summary}</span>
+              {detail === 'full' && (
+                <span class="option-meta">
+                  <code>{option.fileName}</code> · {ARCH_LABELS[option.arch]} · {formatBytes(option.size)}
+                </span>
+              )}
+            </div>
+            <a
+              class:list={['btn', i === 0 ? 'btn-primary' : null, detail === 'compact' ? 'btn-small' : null]}
+              href={option.url}
+              rel="noopener noreferrer"
+            >
+              <Icon name="download" size={18} />
+              {detail === 'compact' ? (
+                <span>
+                  {option.label}
+                  <span class="visually-hidden">
+                    {' '}
+                    for {info.name}, version {version}, {formatBytes(option.size)}
+                  </span>
+                </span>
+              ) : (
+                <span>
+                  Download
+                  <span class="visually-hidden">
+                    {' '}
+                    {option.label} for {info.name}, version {version}, {formatBytes(option.size)}
+                  </span>
+                </span>
+              )}
+            </a>
+            {detail === 'full' && option.sha256 && (
+              <div class="hash">
+                <span class="hash-label">SHA-256</span>
+                <code class="hash-value" id={`sha-${option.id}`}>
+                  {option.sha256}
+                </code>
+                <CopyButton target={`sha-${option.id}`} label={`Copy the SHA-256 of ${option.fileName}`} />
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : info.status === 'unsupported' ? (
+      <p class="empty">{info.note}</p>
+    ) : (
+      <p class="empty">
+        The {version ? `${version} release` : 'latest release'} has no {info.name} package.{' '}
+        <a href={releasesUrl} rel="noopener noreferrer">
+          See all releases on GitHub
+        </a>
+        .
+      </p>
+    )
+  }
+
+  {
+    os === 'windows' && options.length > 0 && (
+      <p class="note warn">
+        <Icon name="alert" size={18} />
+        <span>{detail === 'full' ? info.note : 'New in 1.5, tested under Wine so far; not signed yet, so SmartScreen asks first.'}</span>
+      </p>
+    )
+  }
+  {
+    os === 'linux' && options.length > 0 && (
+      <p class="note">
+        <Icon name="info" size={18} />
+        <span>
+          {detail === 'full' ? info.note : 'x86_64 packages.'} Flatpak and AUR recipes are{' '}
+          <a href="/docs/installation/#flatpak-built-locally">in the repository</a>, not yet published.
+        </span>
+      </p>
+    )
+  }
+  {
+    os === 'macos' && (
+      <p class="note">
+        <Icon name="code" size={18} />
+        <span>
+          Interested in a port? <a href={links.contributing} rel="noopener noreferrer">Contributions are welcome.</a>
+        </span>
+      </p>
+    )
+  }
+</section>
+
+<script>
+  // Marks the visitor's platform and labels "Download for …" buttons.
+  import '../scripts/downloads';
+</script>
+
+<style>
+  .platform {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    background: var(--surface);
+    transition: border-color 200ms, box-shadow 200ms;
+  }
+
+  .platform[data-detected] {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 20px 50px -24px rgb(154 131 255 / 0.6);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .os-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .head-text {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    flex: 1;
+  }
+
+  .head-text :is(h2, h3) {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+
+  .detected-tag {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+
+  .option {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px 16px;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+  }
+
+  .option:target {
+    border-color: var(--accent);
+  }
+
+  .option-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .option-label {
+    font-weight: 750;
+  }
+
+  .option-summary {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .option-meta {
+    color: var(--faint);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+  }
+
+  .option-meta code {
+    font-size: 0.82rem;
+  }
+
+  .hash {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-strong);
+    font-size: 0.82rem;
+  }
+
+  .hash-label {
+    flex: none;
+    color: var(--faint);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .hash-value {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .empty {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .note {
+    display: flex;
+    gap: 10px;
+    margin: auto 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .note :global(svg) {
+    flex: none;
+    margin-top: 3px;
+    color: var(--info);
+  }
+
+  .note.warn :global(svg) {
+    color: var(--warn);
+  }
+
+  /* Compact cards (homepage): stacked buttons, no file details. */
+  .compact .option {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+  }
+
+  .compact .option .btn {
+    justify-self: start;
+  }
+
+  @media (max-width: 560px) {
+    .option {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .option .btn {
+      justify-self: start;
+    }
+  }
+</style>

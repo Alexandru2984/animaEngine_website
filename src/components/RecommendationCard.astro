@@ -1,0 +1,234 @@
+---
+/**
+ * The suggested-download card of the /download/ picker. Rendered filled at
+ * build time (the default suggestion) and empty inside a <template>, which
+ * src/scripts/downloads.ts clones and fills for the detected system. One
+ * component for both keeps the markup and its styles identical, so swapping
+ * one for the other does not move the page.
+ */
+import Icon from './Icon.astro';
+import { ARCH_LABELS, type DownloadOption } from '../lib/downloads';
+import { formatBytes } from '../lib/format';
+
+interface Props {
+  variant?: 'download' | 'message';
+  option?: DownloadOption;
+  alternatives?: DownloadOption[];
+  kicker?: string;
+  /** Element id for the checksum (the copy button targets it). */
+  hashId?: string;
+}
+
+const { variant = 'download', option, alternatives = [], kicker = '', hashId = 'rec-hash' } = Astro.props;
+const filled = option !== undefined;
+---
+
+{
+  variant === 'message' ? (
+    <div class="rec rec-message">
+      <p class="rec-title" data-slot="title" />
+      <p class="rec-summary" data-slot="text" />
+      <p class="rec-links" data-slot="links" />
+    </div>
+  ) : (
+    <div class="rec">
+      <div class="rec-main">
+        <p class="rec-kicker" data-slot="kicker">{kicker}</p>
+        <h3 class="rec-title" data-slot="title">{option?.label}</h3>
+        <p class="rec-summary" data-slot="summary">{option?.summary}</p>
+        <p class="rec-file">
+          <code data-slot="file">{option?.fileName}</code> <span data-slot="meta">{option && `· ${ARCH_LABELS[option.arch]}`}</span>
+        </p>
+      </div>
+      <div class="rec-action">
+        <a class="btn btn-primary rec-button" data-slot="link" href={option?.url} rel="noopener noreferrer">
+          <Icon name="download" size={20} />
+          <span data-slot="button">{option && `Download ${option.label}`}</span>
+        </a>
+        <p class="rec-size" data-slot="size">{option && formatBytes(option.size)}</p>
+      </div>
+      {(!filled || option?.sha256) && (
+        <div class="rec-hash" data-slot="hash-row">
+          <span class="rec-hash-label">SHA-256</span>
+          <code class="rec-hash-value" data-slot="hash" id={hashId}>
+            {option?.sha256}
+          </code>
+          <button class="copy" type="button" data-copy-target={hashId} hidden>
+            <Icon name="copy" size={16} />
+            <span data-copy-text>Copy</span>
+            <span class="visually-hidden">Copy the SHA-256 checksum</span>
+          </button>
+        </div>
+      )}
+      {!filled && (
+        <p class="rec-note" data-slot="note-row">
+          <Icon name="alert" size={18} />
+          <span data-slot="note" />
+        </p>
+      )}
+      {(!filled || alternatives.length > 0) && (
+        <p class="rec-alt" data-slot="alt-row">
+          Also available:{' '}
+          <span data-slot="alt">
+            {alternatives.map((o, i) => (
+              <>
+                {i > 0 && ', '}
+                <a href={`#dl-${o.id}`}>
+                  {o.label} ({formatBytes(o.size)})
+                </a>
+              </>
+            ))}
+          </span>
+        </p>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .rec {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px 24px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+  }
+
+  .rec-message {
+    display: block;
+  }
+
+  .rec-kicker {
+    margin: 0 0 4px;
+    color: var(--accent-strong);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .rec-title {
+    margin: 0 0 4px;
+    font-size: 1.35rem;
+    font-weight: 750;
+  }
+
+  .rec-summary {
+    margin: 0 0 8px;
+    color: var(--muted);
+  }
+
+  .rec-file {
+    margin: 0;
+    color: var(--faint);
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+  }
+
+  .rec-action {
+    display: grid;
+    justify-items: end;
+    align-content: center;
+    gap: 6px;
+  }
+
+  .rec-size {
+    margin: 0;
+    color: var(--faint);
+    font-size: 0.85rem;
+  }
+
+  .rec-hash,
+  .rec-note,
+  .rec-alt {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  .rec-hash {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-strong);
+    font-size: 0.82rem;
+  }
+
+  .rec-hash-label {
+    flex: none;
+    color: var(--faint);
+    font-weight: 700;
+  }
+
+  .rec-hash-value {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    word-break: break-all;
+  }
+
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    min-height: 32px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .copy:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .copy[data-copied] {
+    color: var(--ok);
+    border-color: var(--ok);
+  }
+
+  .rec-note {
+    display: flex;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .rec-note :global(svg) {
+    flex: none;
+    margin-top: 3px;
+    color: var(--warn);
+  }
+
+  .rec-alt {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .rec-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0 0;
+  }
+
+  @media (max-width: 640px) {
+    .rec {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rec-action {
+      justify-items: start;
+    }
+  }
+</style>

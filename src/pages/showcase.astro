@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ClipShowcase from '../components/ClipShowcase.astro';
+import ScreenshotGallery from '../components/ScreenshotGallery.astro';
+import CharacterExplorer from '../components/CharacterExplorer.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import Icon from '../components/Icon.astro';
+import { breadcrumbs } from '../lib/structured-data';
+import { clipPoster } from '../lib/posters';
+import { clips } from '../data/media';
+
+const firstPoster = await clipPoster(clips[0]!);
+---
+
+<BaseLayout
+  title="Showcase"
+  description="Recordings and screenshots of animaEngine running on a Linux desktop, and the ten built-in characters walking, falling, dangling and asleep."
+  jsonLd={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Showcase', path: '/showcase/' }])]}
+  preloadImage={firstPoster.src}
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Showcase</p>
+      <h1>The real app, recorded</h1>
+      <p class="lead">
+        Every clip and screenshot here was recorded from animaEngine on the project’s test rig. Nothing is mocked up.
+      </p>
+    </div>
+  </section>
+
+  <section class="section first" aria-labelledby="clips-title">
+    <div class="container">
+      <SectionHeader id="clips-title" title="Clips">Silent, a few seconds each. They pause when you scroll away.</SectionHeader>
+      <ClipShowcase idPrefix="clips" />
+    </div>
+  </section>
+
+  <section class="section section-alt" aria-labelledby="shots-title">
+    <div class="container">
+      <SectionHeader id="shots-title" title="Screenshots">Select one to see it at full size.</SectionHeader>
+      <ScreenshotGallery />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="characters-title">
+    <div class="container">
+      <SectionHeader id="characters-title" title="Ten built-in characters">
+        Each one has its own drawings for standing, walking, being picked up, falling and sleeping — the same files the app
+        uses. Or drop in a picture of your own.
+      </SectionHeader>
+      <CharacterExplorer />
+      <p class="more">
+        <a class="link-arrow" href="/download/">Get them on your desktop <Icon name="arrow-right" /></a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .first {
+    padding-top: 16px;
+  }
+
+  .more {
+    margin: 32px 0 0;
+  }
+</style>

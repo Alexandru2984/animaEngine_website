@@ -1,0 +1,73 @@
+---
+import '@fontsource-variable/manrope/wght.css';
+import '../styles/global.css';
+import fontLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { site } from '../data/site';
+
+interface Props {
+  /** Page title without the site name; omit on the homepage. */
+  title?: string;
+  description: string;
+  /** Structured data objects, serialised as JSON-LD. */
+  jsonLd?: Record<string, unknown>[];
+  /** Keep the page out of search results (the 404 page). */
+  noindex?: boolean;
+  ogType?: 'website' | 'article';
+  /** The above-the-fold image (LCP candidate) to fetch early. */
+  preloadImage?: string;
+}
+
+const { title, description, jsonLd = [], noindex = false, ogType = 'website', preloadImage } = Astro.props;
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, site.url).href;
+const ogImage = new URL(site.ogImage.path, site.url).href;
+
+// JSON-LD is data, not script: escape "<" so text can never close the tag.
+const ld = jsonLd.map((obj) => JSON.stringify(obj).replace(/</g, '\\u003c'));
+---
+
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+
+    <link rel="preload" href={fontLatin} as="font" type="font/woff2" crossorigin />
+    {preloadImage && <link rel="preload" href={preloadImage} as="image" type="image/webp" fetchpriority="high" />}
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/icons/site.webmanifest" />
+    <meta name="theme-color" content={site.themeColor} />
+    <meta name="color-scheme" content="dark" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(site.ogImage.width)} />
+    <meta property="og:image:height" content={String(site.ogImage.height)} />
+    <meta property="og:image:alt" content={site.ogImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {ld.map((json) => <script type="application/ld+json" set:html={json} />)}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

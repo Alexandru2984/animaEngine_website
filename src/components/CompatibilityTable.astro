@@ -1,0 +1,150 @@
+---
+import StatusBadge from './StatusBadge.astro';
+import InlineText from './InlineText.astro';
+import { environments, linuxPackages } from '../data/platforms';
+
+interface Props {
+  /** Show the Linux packaging channels below the table. */
+  showPackages?: boolean;
+}
+const { showPackages = true } = Astro.props;
+---
+
+<div class="compat">
+  <ul class="envs">
+    {
+      environments.map((env) => (
+        <li class={`env env-${env.status}`}>
+          <div class="env-head">
+            <div>
+              <h3>{env.name}</h3>
+              <p class="detail">{env.detail}</p>
+            </div>
+            <StatusBadge status={env.status} />
+          </div>
+          <p class="notes"><InlineText text={env.notes} /></p>
+        </li>
+      ))
+    }
+  </ul>
+
+  {
+    showPackages && (
+      <div class="packages">
+        <h3>Linux packages</h3>
+        <ul>
+          {linuxPackages.map((pkg) => (
+            <li>
+              <span class="pkg-name">{pkg.name}</span>
+              <StatusBadge status={pkg.status} />
+              <span class="pkg-text"><InlineText text={pkg.text} /></span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .compat {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .envs {
+    display: grid;
+    gap: 12px;
+  }
+
+  .env {
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .env-stable {
+    border-left-color: var(--ok);
+  }
+
+  .env-opt-in {
+    border-left-color: var(--info);
+  }
+
+  .env-experimental {
+    border-left-color: var(--warn);
+  }
+
+  .env-unsupported {
+    border-left-color: var(--no);
+  }
+
+  .env-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1.08rem;
+  }
+
+  .detail {
+    margin: 2px 0 0;
+    color: var(--faint);
+    font-size: 0.9rem;
+  }
+
+  .notes {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .packages {
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    background: var(--bg-raised);
+  }
+
+  .packages h3 {
+    margin-bottom: 12px;
+  }
+
+  .packages li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .pkg-name {
+    font-weight: 700;
+  }
+
+  .pkg-text {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 900px) {
+    .compat {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

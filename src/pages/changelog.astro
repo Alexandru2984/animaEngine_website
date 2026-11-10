@@ -1,0 +1,324 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { getManifest } from '../lib/releases';
+import { buildDownloads, PLATFORM_OSES, pickLatestStable } from '../lib/downloads';
+import { compareVersions } from '../lib/release-manifest.js';
+import { formatBytes, formatDate, isoDay } from '../lib/format';
+import { links } from '../data/site';
+import { breadcrumbs } from '../lib/structured-data';
+
+const manifest = getManifest();
+const latest = pickLatestStable(manifest.releases);
+const entries = (await getCollection('changelog')).sort((a, b) => compareVersions(b.data.version, a.data.version));
+
+const rendered = await Promise.all(
+  entries.map(async (entry) => {
+    const release = manifest.releases.find((r) => r.tag === entry.data.tag) ?? null;
+    const downloads = buildDownloads(release);
+    const files = PLATFORM_OSES.flatMap((os) => downloads[os]);
+    const { Content } = await render(entry);
+    return { entry, release, files, Content };
+  }),
+);
+
+const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS' } as const;
+---
+
+<BaseLayout
+  title="Changelog"
+  description="Release notes for every published animaEngine version, newest first, with links to each release's files on GitHub."
+  jsonLd={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Changelog', path: '/changelog/' }])]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Changelog</p>
+      <h1>What changed, release by release</h1>
+      <p class="lead">
+        The notes published with each GitHub release, newest first. The complete history, including smaller versions
+        that were tagged without a release page, is in
+        <a href={links.changelogFile} rel="noopener noreferrer">CHANGELOG.md</a>.
+      </p>
+    </div>
+  </section>
+
+  <div class="container layout">
+    <nav class="versions" aria-label="Versions">
+      <ul>
+        {
+          rendered.map(({ entry }) => (
+            <li>
+              <a href={`#${entry.data.tag}`}>
+                {entry.data.version}
+                {entry.data.prerelease && <span class="pre">pre-release</span>}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="releases">
+      {
+        rendered.map(({ entry, release, files, Content }) => (
+          <article class="release" id={entry.data.tag} aria-labelledby={`${entry.data.tag}-title`}>
+            <header class="release-head">
+              <div>
+                <h2 id={`${entry.data.tag}-title`}>{entry.data.title}</h2>
+                <p class="meta">
+                  <time datetime={isoDay(entry.data.publishedAt)}>{formatDate(entry.data.publishedAt)}</time>
+                  {latest && latest.tag === entry.data.tag && <span class="badge badge-stable">Latest</span>}
+                  {entry.data.prerelease && <span class="badge badge-experimental">Pre-release</span>}
+                </p>
+              </div>
+              <a class="btn btn-small" href={entry.data.url} rel="noopener noreferrer">
+                <Icon name="github" size={18} /> Release page
+              </a>
+            </header>
+
+            <div class="prose notes">
+              <Content />
+            </div>
+
+            {files.length > 0 && (
+              <details class="files">
+                <summary>
+                  Files of {entry.data.version} ({files.length})
+                </summary>
+                <ul>
+                  {files.map((f) => (
+                    <li>
+                      <a href={f.url} rel="noopener noreferrer">
+                        {f.fileName}
+                      </a>
+                      <span class="muted">
+                        {OS_SHORT[f.os]} · {f.label} · {formatBytes(f.size)}
+                      </span>
+                    </li>
+                  ))}
+                  {release?.checksumsUrl && (
+                    <li>
+                      <a href={release.checksumsUrl} rel="noopener noreferrer">
+                        SHA-256 checksums
+                      </a>
+                    </li>
+                  )}
+                </ul>
+              </details>
+            )}
+          </article>
+        ))
+      }
+
+      {
+        manifest.tagsWithoutRelease.length > 0 && (
+          <section class="tags" aria-labelledby="tags-title">
+            <h2 id="tags-title">Tagged without a release page</h2>
+            <p class="muted">
+              These versions were tagged in the repository but have no GitHub release with files. Their notes are in the
+              repository.
+            </p>
+            <ul>
+              {[...manifest.tagsWithoutRelease]
+                .sort((a, b) => compareVersions(b, a))
+                .map((tag) => (
+                  <li>
+                    <a href={links.docs.releaseNotes(tag)} rel="noopener noreferrer">
+                      {tag.replace(/^v/, '')}
+                    </a>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        )
+      }
+
+      <p class="synced small muted">
+        Release data last synced from GitHub on <time datetime={manifest.syncedAt}>{formatDate(manifest.syncedAt)}</time>.
+        For anything newer, see <a href={`https://github.com/${manifest.repository}/releases`} rel="noopener noreferrer">GitHub Releases</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 48px;
+    padding-bottom: clamp(64px, 9vw, 120px);
+  }
+
+  .versions ul {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .versions a {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-left: -1px;
+    padding: 5px 14px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .versions a:hover {
+    border-left-color: var(--accent);
+    color: var(--text);
+  }
+
+  .pre {
+    color: var(--faint);
+    font-family: var(--font);
+    font-size: 0.72rem;
+  }
+
+  .releases {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    min-width: 0;
+  }
+
+  .release {
+    padding: clamp(20px, 3vw, 32px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    background: var(--surface);
+  }
+
+  .release-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px 24px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .release-head h2 {
+    margin: 0 0 6px;
+    font-size: 1.5rem;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .notes {
+    max-width: none;
+  }
+
+  .notes :global(h3) {
+    font-size: 1.15rem;
+  }
+
+  .notes :global(pre) {
+    background: var(--bg);
+  }
+
+  .files {
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .files summary {
+    cursor: pointer;
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .files ul {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .files li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 0.92rem;
+  }
+
+  .files li a {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+  }
+
+  .tags {
+    padding: 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-l);
+  }
+
+  .tags h2 {
+    font-size: 1.25rem;
+  }
+
+  .tags ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 0;
+  }
+
+  .tags a {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    text-decoration: none;
+  }
+
+  .synced {
+    margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .versions ul {
+      position: static;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border: 0;
+    }
+
+    .versions a {
+      margin: 0;
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+  }
+</style>

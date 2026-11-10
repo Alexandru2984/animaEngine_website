@@ -1,0 +1,280 @@
+---
+/**
+ * The ten built-in characters and their animations, using the app's own
+ * drawings. Without JavaScript: a grid of the characters. With it
+ * (src/scripts/characters.ts): pick a character and a state to watch it.
+ * Animations start only on request under prefers-reduced-motion, and can
+ * always be paused.
+ */
+import { getImage, Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { CHARACTER_STATES, characters } from '../data/media';
+import { jsonForHtml } from '../lib/site-downloads';
+
+const data = await Promise.all(
+  characters.map(async (c) => ({
+    name: c.name,
+    label: c.label,
+    still: (await getImage({ src: c.still, width: 256, format: 'webp', quality: 85 })).src,
+    states: {
+      ...c.states,
+      sleep: (await getImage({ src: c.asleep, width: 256, format: 'webp', quality: 85 })).src,
+    },
+  })),
+);
+const payload = jsonForHtml({ characters: data, states: CHARACTER_STATES });
+const initial = data.find((c) => c.name === 'cat') ?? data[0]!;
+---
+
+<div class="explorer" data-character-explorer>
+  <script type="application/json" data-character-data set:html={payload} />
+
+  <ul class="roster" data-roster-static>
+    {
+      characters.map((c) => (
+        <li>
+          <Image src={c.still} width={96} height={96} widths={[96, 192]} sizes="96px" format="webp" alt="" loading="lazy" decoding="async" />
+          <span>{c.label}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="interactive" data-explorer-ui hidden>
+    <div class="stage">
+      <div class="stage-ground" aria-hidden="true"></div>
+      <img data-stage-img src={initial.still} width="256" height="256" alt={`The ${initial.name}, standing still`} />
+      <div class="stage-bar">
+        <p class="stage-caption" data-stage-caption aria-live="polite">{initial.label}</p>
+        <button type="button" class="stage-toggle" data-stage-toggle>
+          <Icon name="pause" size={18} />
+          <span data-stage-toggle-text>Pause</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <fieldset>
+        <legend>Character</legend>
+        <div class="choices characters">
+          {
+            characters.map((c) => (
+              <label class="choice">
+                <input type="radio" name="explorer-character" value={c.name} checked={c.name === initial.name} />
+                <Image src={c.still} width={56} height={56} widths={[56, 112]} sizes="56px" format="webp" alt="" loading="lazy" decoding="async" />
+                <span>{c.label}</span>
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>What it is doing</legend>
+        <div class="choices states">
+          {
+            CHARACTER_STATES.map((s, i) => (
+              <label class="choice pill">
+                <input type="radio" name="explorer-state" value={s.id} checked={i === 0} />
+                <span>{s.label}</span>
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+    </div>
+  </div>
+</div>
+
+<script>
+  import '../scripts/characters';
+</script>
+
+<style>
+  .roster {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .roster li {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 16px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-weight: 650;
+  }
+
+  .interactive {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 28px;
+    align-items: stretch;
+  }
+
+  .stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 380px;
+    padding: 32px 24px 88px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-l);
+    background:
+      radial-gradient(70% 60% at 50% 20%, rgb(143 200 255 / 0.12), transparent 70%),
+      linear-gradient(180deg, #2a2150, #1a1530 70%);
+    overflow: hidden;
+  }
+
+  .stage-ground {
+    position: absolute;
+    inset: auto -10% 0;
+    height: 120px;
+    border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+    background: #221b3b;
+  }
+
+  .stage img {
+    position: relative;
+    width: min(256px, 70%);
+    height: auto;
+    image-rendering: auto;
+  }
+
+  .stage-bar {
+    position: absolute;
+    inset: auto 16px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .stage-caption {
+    margin: 0;
+    font-weight: 750;
+  }
+
+  .stage-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 16px;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 999px;
+    background: rgb(16 14 23 / 0.6);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  fieldset {
+    margin: 0 0 20px;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin-bottom: 10px;
+    color: var(--faint);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .choices {
+    display: grid;
+    gap: 10px;
+  }
+
+  .choices.characters {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .choices.states {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .choice {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: border-color 140ms, background-color 140ms, color 140ms;
+  }
+
+  .choice.pill {
+    display: inline-flex;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+  }
+
+  .choice:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .choice input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .choice:has(input:checked) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+
+  .choice:has(input:focus-visible) {
+    outline: 3px solid var(--accent-strong);
+    outline-offset: 2px;
+  }
+
+  .choice :global(img) {
+    width: 56px;
+    height: 56px;
+  }
+
+  @media (max-width: 960px) {
+    .interactive {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .roster,
+    .choices.characters {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .choice :global(img) {
+      width: 44px;
+      height: 44px;
+    }
+
+    .stage {
+      min-height: 320px;
+    }
+  }
+</style>

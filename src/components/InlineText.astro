@@ -1,0 +1,12 @@
+---
+/**
+ * Renders a plain data string, turning `backtick` spans into <code>. Keeps
+ * content files free of HTML while commands and paths still look like code.
+ */
+interface Props {
+  text: string;
+}
+const parts = Astro.props.text.split(/(`[^`]+`)/g).filter((p) => p !== '');
+---
+
+{parts.map((part) => (part.startsWith('`') && part.endsWith('`') ? <code>{part.slice(1, -1)}</code> : part))}

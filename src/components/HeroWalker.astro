@@ -1,0 +1,103 @@
+---
+/**
+ * The cat from animaEngine's built-in characters walking along the hills
+ * at the bottom of the hero — the app's own sprite sheet, 12 frames, driven
+ * by CSS only. Decorative; under prefers-reduced-motion it just sits.
+ */
+---
+
+<div class="hills" aria-hidden="true">
+  <svg class="hill hill-back" viewBox="0 0 1440 160" preserveAspectRatio="none">
+    <path d="M0 96C180 40 360 20 560 46s360 70 560 54 260-56 320-64v128H0z"></path>
+  </svg>
+  <svg class="hill hill-front" viewBox="0 0 1440 160" preserveAspectRatio="none">
+    <path d="M0 120c220-44 420-60 640-42s420 54 580 40 180-30 220-36v78H0z"></path>
+  </svg>
+  <div class="walker-track"><div class="walker"></div></div>
+</div>
+
+<style>
+  .hills {
+    position: absolute;
+    inset: auto 0 0;
+    height: 150px;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .hill {
+    position: absolute;
+    inset: auto 0 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hill-back path {
+    fill: #221b3b;
+  }
+
+  .hill-front {
+    height: 70%;
+  }
+
+  .hill-front path {
+    fill: #191429;
+  }
+
+  .walker-track {
+    position: absolute;
+    inset: auto 0 34px;
+    height: 88px;
+  }
+
+  .walker {
+    --s: 88px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: var(--s);
+    height: var(--s);
+    /* 12 frames of 256 px in a row, drawn at --s. */
+    background: url('../../site-assets/characters/cat-walk-sheet.png') 0 0 / calc(var(--s) * 12) var(--s) no-repeat;
+    transform: translateX(12vw);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .walker {
+      animation:
+        walk-frames 1.2s steps(12) infinite,
+        walk-across 34s linear infinite;
+      will-change: transform;
+    }
+  }
+
+  @keyframes walk-frames {
+    to {
+      background-position: calc(var(--s) * -12) 0;
+    }
+  }
+
+  @keyframes walk-across {
+    from {
+      transform: translateX(-100px);
+    }
+    to {
+      transform: translateX(calc(100vw + 20px));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hills {
+      height: 110px;
+    }
+
+    .walker-track {
+      bottom: 22px;
+      height: 64px;
+    }
+
+    .walker {
+      --s: 64px;
+    }
+  }
+</style>

@@ -1,0 +1,49 @@
+---
+/** Copies the text of the element with id `target`. Hidden until JavaScript runs. */
+import Icon from './Icon.astro';
+
+interface Props {
+  target: string;
+  label: string;
+}
+const { target, label } = Astro.props;
+---
+
+<button class="copy" type="button" data-copy-target={target} hidden>
+  <Icon name="copy" size={16} />
+  <span class="copy-text" data-copy-text>Copy</span>
+  <span class="visually-hidden">{label}</span>
+</button>
+
+<script>
+  import '../scripts/copy';
+</script>
+
+<style>
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    min-height: 32px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .copy:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .copy[data-copied] {
+    color: var(--ok);
+    border-color: var(--ok);
+  }
+</style>

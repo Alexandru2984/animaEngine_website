@@ -1,0 +1,141 @@
+---
+/**
+ * "Recommended for you" panel on /download/. At build time it shows the Linux
+ * suggestion, so it is useful without JavaScript and keeps its size when the
+ * script (src/scripts/downloads.ts) replaces it with the suggestion for the
+ * detected system. The system links jump to the full list without
+ * JavaScript, and switch the suggestion with it. Nothing downloads by itself.
+ */
+import RecommendationCard from './RecommendationCard.astro';
+import { recommend } from '../lib/downloads';
+import { UNKNOWN } from '../lib/os-detect';
+import { jsonForHtml, OS_INFO, pickerPayload, type DownloadContext } from '../lib/site-downloads';
+
+interface Props {
+  ctx: DownloadContext;
+}
+const { ctx } = Astro.props;
+const payload = jsonForHtml(pickerPayload(ctx));
+const initial = recommend(ctx.downloads, { ...UNKNOWN, os: 'linux' });
+const systems = [
+  { os: 'linux', label: 'Linux' },
+  { os: 'windows', label: 'Windows' },
+  { os: 'macos', label: 'macOS' },
+] as const;
+---
+
+<section class="picker" data-download-picker aria-labelledby="picker-title">
+  <script type="application/json" data-download-data set:html={payload} />
+  <div class="picker-head">
+    <h2 id="picker-title">Recommended for you</h2>
+    <p class="picker-status" data-picker-status aria-live="polite">
+      {
+        !ctx.latest
+          ? 'No downloadable release has been published yet.'
+          : initial.kind === 'download'
+            ? 'Showing the Linux download. Every file of the release is in the list below.'
+            : 'Choose your system in the list below.'
+      }
+    </p>
+  </div>
+
+  <div class="picker-body" data-picker-body>
+    {
+      initial.kind === 'download' && (
+        <RecommendationCard
+          option={initial.primary}
+          alternatives={initial.alternatives}
+          kicker={`animaEngine ${ctx.latest?.version ?? ''} for ${OS_INFO.linux.name}`}
+        />
+      )
+    }
+  </div>
+
+  {
+    ctx.latest && (
+      <nav class="picker-choose" aria-labelledby="picker-choose-label">
+        <span id="picker-choose-label">Not your system? Show:</span>
+        <div class="segmented">
+          {systems.map((s) => (
+            <a href={`#downloads-${s.os}`} data-pick-os={s.os}>
+              {s.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+    )
+  }
+
+  <template data-picker-template><RecommendationCard /></template>
+  <template data-picker-message><RecommendationCard variant="message" /></template>
+</section>
+
+<script>
+  import '../scripts/downloads';
+</script>
+
+<style>
+  .picker {
+    padding: clamp(20px, 3vw, 32px);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-l);
+    background:
+      radial-gradient(90% 120% at 0% 0%, rgb(154 131 255 / 0.16), transparent 60%),
+      var(--surface);
+    box-shadow: 0 30px 80px -40px rgb(107 79 216 / 0.6);
+  }
+
+  .picker-head h2 {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+
+  .picker-status {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .picker-body:not(:empty) {
+    margin-top: 20px;
+  }
+
+  .picker-choose {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .segmented {
+    display: inline-flex;
+    padding: 4px;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-raised);
+  }
+
+  .segmented a {
+    display: inline-grid;
+    place-items: center;
+    min-height: 40px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    color: var(--muted);
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .segmented a:hover {
+    color: var(--text);
+  }
+
+  .segmented a[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+</style>

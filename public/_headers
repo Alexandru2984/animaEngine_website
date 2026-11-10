@@ -1,0 +1,27 @@
+# Response headers for Cloudflare Workers Static Assets.
+# Every matching rule applies. The first rule that sets a header replaces the
+# platform default; a later rule setting the same header appends to it, so
+# Cache-Control is only ever set by one rule per path. HTML keeps the default
+# "public, max-age=0, must-revalidate"; see README.md.
+
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(self), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000
+
+# Hashed build output (file names change whenever the content does).
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Stable URLs that rarely change: cache for a day, revalidate after.
+/icons/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/social/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/favicon.ico
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

@@ -1,0 +1,223 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DownloadPicker from '../components/DownloadPicker.astro';
+import PlatformDownloads from '../components/PlatformDownloads.astro';
+import Icon from '../components/Icon.astro';
+import { getDownloadContext } from '../lib/site-downloads';
+import { PLATFORM_OSES } from '../lib/downloads';
+import { formatDate, isoDay } from '../lib/format';
+import { breadcrumbs, softwareApplication } from '../lib/structured-data';
+import { links } from '../data/site';
+
+const ctx = getDownloadContext();
+const { latest, downloads } = ctx;
+const deb = downloads.linux.find((o) => o.format === 'deb');
+const appimage = downloads.linux.find((o) => o.format === 'appimage');
+const checksumsFile = latest?.assets.find((a) => /^SHA256SUMS/i.test(a.name));
+---
+
+<BaseLayout
+  title="Download"
+  description={
+    latest
+      ? `Download animaEngine ${latest.version} for Linux (.deb, AppImage) or Windows (experimental installer and ZIP), with SHA-256 checksums and install steps.`
+      : 'Download animaEngine for Linux or Windows from GitHub Releases.'
+  }
+  jsonLd={[softwareApplication(latest), breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Download', path: '/download/' }])]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Download</p>
+      <h1>Download animaEngine</h1>
+      {
+        latest ? (
+          <p class="lead">
+            Version <strong>{latest.version}</strong>, released <time datetime={isoDay(latest.publishedAt)}>{formatDate(latest.publishedAt)}</time>.
+            Free and open source under the MIT licence. Files come straight from{' '}
+            <a href={latest.url} rel="noopener noreferrer">GitHub Releases</a>.
+          </p>
+        ) : (
+          <p class="lead">
+            No release with downloadable files has been published yet. Check{' '}
+            <a href={ctx.releasesUrl} rel="noopener noreferrer">GitHub Releases</a> or build it from source.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <div class="container stack">
+    <DownloadPicker ctx={ctx} />
+
+    <section aria-labelledby="all-title">
+      <h2 id="all-title" class="block-title">All downloads{latest && ` for ${latest.version}`}</h2>
+      <div class="platform-list">
+        {
+          PLATFORM_OSES.map((os) => (
+            <PlatformDownloads os={os} options={downloads[os]} version={latest?.version ?? null} releasesUrl={ctx.releasesUrl} detail="full" />
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      latest && (
+        <section class="panel guide" id="verify" aria-labelledby="verify-title">
+          <h2 id="verify-title">Check the download</h2>
+          <p class="muted">
+            Before you run a file, compare it with the checksum list published with the release. GitHub also attests
+            where each file was built.
+          </p>
+          {checksumsFile ? (
+            <>
+              <p>
+                <a class="btn btn-small" href={checksumsFile.url} rel="noopener noreferrer">
+                  <Icon name="download" size={18} /> {checksumsFile.name}
+                </a>
+              </p>
+              <pre class="code"><code>{`sha256sum -c --ignore-missing ${checksumsFile.name}${deb ? `\n# gh 2.49 or newer\ngh attestation verify ${deb.fileName} --repo ${ctx.repository}` : ''}`}</code></pre>
+            </>
+          ) : (
+            <p>This release has no checksum list. Each file’s SHA-256 above comes from GitHub’s own record of the upload.</p>
+          )}
+          <p class="small muted">On Windows, PowerShell prints a file’s SHA-256 with <code>Get-FileHash .\file.exe</code>.</p>
+        </section>
+      )
+    }
+
+    {
+      (deb || appimage) && (
+        <section class="panel guide" id="install" aria-labelledby="install-title">
+          <h2 id="install-title">Install on Linux</h2>
+          {deb && (
+            <>
+              <h3>Debian, Ubuntu and derivatives</h3>
+              <pre class="code"><code>{`sudo apt install ./${deb.fileName}\n# remove it again with: sudo apt remove anima-engine`}</code></pre>
+            </>
+          )}
+          {appimage && (
+            <>
+              <h3>AppImage</h3>
+              <pre class="code"><code>{`chmod +x ${appimage.fileName}\n./${appimage.fileName}`}</code></pre>
+            </>
+          )}
+          <p class="muted">
+            Then open edit mode with the ⚙ button in the top-right corner, or <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>A</kbd>.
+            The <a href="/docs/getting-started/">getting started guide</a> covers the rest.
+          </p>
+        </section>
+      )
+    }
+
+    <section class="other" aria-labelledby="other-title">
+      <h2 id="other-title" class="block-title">Other ways to get it</h2>
+      <div class="other-grid">
+        <article class="panel">
+          <h3>Flatpak</h3>
+          <p class="muted">Not on Flathub yet. The manifest in the repository builds a bundle locally with <code>make flatpak</code>.</p>
+          <a class="link-arrow" href={links.docs.flatpak} rel="noopener noreferrer">Flatpak instructions <Icon name="external" /></a>
+        </article>
+        <article class="panel">
+          <h3>Arch Linux (AUR)</h3>
+          <p class="muted">A <code>PKGBUILD</code> is kept in the repository; the AUR package has not been published yet.</p>
+          <a class="link-arrow" href={links.docs.aur} rel="noopener noreferrer">Packaging notes <Icon name="external" /></a>
+        </article>
+        <article class="panel">
+          <h3>From source</h3>
+          <p class="muted">Rust 1.88 or newer, xkbcommon and ALSA headers, then <code>cargo build --release</code>.</p>
+          <a class="link-arrow" href="/docs/installation/#from-source">Build instructions <Icon name="arrow-right" /></a>
+        </article>
+        <article class="panel">
+          <h3>Older versions</h3>
+          <p class="muted">Every earlier release, pre-releases included, with its notes and files.</p>
+          <a class="link-arrow" href="/changelog/">Changelog <Icon name="arrow-right" /></a>
+        </article>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    padding-bottom: clamp(64px, 9vw, 120px);
+  }
+
+  .block-title {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
+
+  .platform-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  .platform-list > :global(.platform-macos) {
+    grid-column: 1 / -1;
+  }
+
+  .guide {
+    padding: clamp(20px, 3vw, 32px);
+  }
+
+  .guide h2 {
+    font-size: 1.5rem;
+  }
+
+  .guide h3 {
+    font-size: 1.05rem;
+    margin-top: 1.4em;
+  }
+
+  .guide pre {
+    margin-bottom: 1em;
+  }
+
+  .other-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .other-grid .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px;
+  }
+
+  .other-grid h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .other-grid p {
+    margin: 0 0 auto;
+    font-size: 0.95rem;
+  }
+
+  .other-grid .link-arrow {
+    margin-top: 12px;
+  }
+
+  @media (max-width: 1100px) {
+    .platform-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .other-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .other-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

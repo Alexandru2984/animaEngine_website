@@ -1,0 +1,130 @@
+---
+/**
+ * The four product clips with a list to switch between them. Without
+ * JavaScript the list is a set of links and CSS (:target) shows the chosen
+ * clip; src/scripts/tabs.ts upgrades it to ARIA tabs with the same layout, so
+ * nothing moves when the script starts.
+ */
+import ClipPlayer from './ClipPlayer.astro';
+import { clips } from '../data/media';
+
+interface Props {
+  idPrefix?: string;
+}
+const { idPrefix = 'showcase' } = Astro.props;
+---
+
+<div class="showcase" data-tabs>
+  <nav class="tab-list" data-tab-list aria-label="Clips">
+    {
+      clips.map((clip, i) => (
+        <a class="tab" href={`#${idPrefix}-${clip.id}`} data-tab={`${idPrefix}-${clip.id}`} data-selected={i === 0 ? '' : undefined}>
+          <span class="tab-title">{clip.title}</span>
+          <span class="tab-caption">{clip.caption}</span>
+          <span class="tab-length">{clip.seconds} s</span>
+        </a>
+      ))
+    }
+  </nav>
+  <div class="panels">
+    {
+      clips.map((clip) => (
+        <div class="panel-item" id={`${idPrefix}-${clip.id}`} data-tab-panel>
+          <ClipPlayer clip={clip} autoplay idPrefix={idPrefix} showCaption={false} />
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  import '../scripts/tabs';
+</script>
+
+<style>
+  .showcase {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .tab-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .tab {
+    display: grid;
+    align-content: start;
+    gap: 2px;
+    flex: 1 0 200px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 160ms, background-color 160ms, color 160ms;
+  }
+
+  .tab:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .tab[data-selected] {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgb(154 131 255 / 0.16), rgb(154 131 255 / 0.04));
+    color: var(--text);
+  }
+
+  .tab-title {
+    color: var(--text);
+    font-weight: 750;
+  }
+
+  .tab-caption {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .tab-length {
+    margin-top: 6px;
+    color: var(--faint);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Without the script: the first clip, or the one the URL points at. */
+  .showcase:not(.tabs-ready) .panel-item:not(:first-child) {
+    display: none;
+  }
+
+  .showcase:not(.tabs-ready) .panels:has(> .panel-item:target) > .panel-item:not(:target) {
+    display: none;
+  }
+
+  .showcase:not(.tabs-ready) .panels > .panel-item:target {
+    display: block;
+  }
+
+  @media (min-width: 960px) {
+    .showcase {
+      grid-template-columns: 320px minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .tab-list {
+      flex-direction: column;
+      overflow: visible;
+    }
+
+    .tab {
+      flex: none;
+    }
+  }
+</style>

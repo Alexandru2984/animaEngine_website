@@ -1,0 +1,118 @@
+---
+/**
+ * A short, silent product clip. Without JavaScript it is a normal video with
+ * the browser's controls. With JavaScript (src/scripts/clips.ts) the controls
+ * give way to one play/pause button, `autoplay` clips start when scrolled
+ * into view (never under prefers-reduced-motion) and pause when out of view.
+ */
+import Icon from './Icon.astro';
+import { MP4_TYPE, WEBM_TYPE, type Clip } from '../data/media';
+import { clipPoster } from '../lib/posters';
+
+interface Props {
+  clip: Clip;
+  autoplay?: boolean;
+  /** Keeps element ids unique when one clip appears twice on a page. */
+  idPrefix?: string;
+  showCaption?: boolean;
+  class?: string;
+}
+
+const { clip, autoplay = false, idPrefix = 'clip', showCaption = true, class: className } = Astro.props;
+const poster = await clipPoster(clip);
+const descId = `${idPrefix}-${clip.id}-desc`;
+---
+
+<figure class:list={['clip', className]} data-clip data-autoplay={autoplay ? '' : undefined}>
+  <div class="frame">
+    <video
+      width={clip.width}
+      height={clip.height}
+      poster={poster.src}
+      preload="none"
+      muted
+      loop
+      playsinline
+      controls
+      disablepictureinpicture
+      aria-describedby={descId}
+    >
+      <source src={clip.mp4} type={MP4_TYPE} />
+      <source src={clip.webm} type={WEBM_TYPE} />
+      <p>Your browser cannot play this clip. <a href={clip.mp4}>Download it (MP4)</a>.</p>
+    </video>
+    <button class="toggle" type="button" data-clip-toggle data-state="paused" hidden>
+      <span class="when-paused"><Icon name="play" size={20} /><span class="visually-hidden">Play clip: {clip.title}</span></span>
+      <span class="when-playing"><Icon name="pause" size={20} /><span class="visually-hidden">Pause clip: {clip.title}</span></span>
+    </button>
+  </div>
+  <figcaption class:list={[{ 'visually-hidden': !showCaption }]}>
+    <strong>{clip.title}.</strong>
+    {clip.caption}
+    <span id={descId} class="visually-hidden">{clip.description}</span>
+  </figcaption>
+</figure>
+
+<script>
+  import '../scripts/clips';
+</script>
+
+<style>
+  .clip {
+    margin: 0;
+  }
+
+  .frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #241c3f;
+    border: 1px solid var(--border-strong);
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .toggle {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    background: rgb(16 14 23 / 0.72);
+    color: #fff;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background-color 140ms, transform 140ms;
+  }
+
+  .toggle:hover {
+    background: rgb(16 14 23 / 0.92);
+    transform: scale(1.05);
+  }
+
+  .toggle[data-state='paused'] .when-playing,
+  .toggle[data-state='playing'] .when-paused {
+    display: none;
+  }
+
+  figcaption {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  figcaption strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+</style>

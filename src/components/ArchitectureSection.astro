@@ -1,0 +1,260 @@
+---
+import Icon from './Icon.astro';
+import { benchmarks, performanceFacts, pipeline, stack } from '../data/architecture';
+import { links } from '../data/site';
+
+const factIcons = ['zap', 'battery', 'cpu', 'layers'] as const;
+---
+
+<div class="arch">
+  <div class="pipeline" role="group" aria-label="How a picture reaches your screen">
+    <ol>
+      {
+        pipeline.map((step, i) => (
+          <li>
+            <span class="step-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <strong>{step.title}</strong>
+              <span>{step.text}</span>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="pipeline-note">
+      Based on the project’s <a href={links.docs.architecture} rel="noopener noreferrer">architecture notes</a>.
+    </p>
+  </div>
+
+  <div class="facts">
+    <ul class="fact-list">
+      {
+        performanceFacts.map((fact, i) => (
+          <li>
+            <span class="fact-icon">
+              <Icon name={factIcons[i % factIcons.length]!} />
+            </span>
+            <div>
+              <h3>{fact.title}</h3>
+              <p>{fact.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="stack">
+      <h3>Built with</h3>
+      <dl>
+        {
+          stack.map((item) => (
+            <div>
+              <dt>{item.name}</dt>
+              <dd>{item.role}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</div>
+
+{
+  benchmarks.length > 0 && (
+    <div class="table-wrap benchmarks">
+      <table>
+        <caption class="visually-hidden">Measured performance</caption>
+        <thead>
+          <tr>
+            <th scope="col">Metric</th>
+            <th scope="col">Result</th>
+            <th scope="col">Conditions</th>
+            <th scope="col">Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          {benchmarks.map((b) => (
+            <tr>
+              <th scope="row">{b.metric}</th>
+              <td>
+                <a href={b.sourceUrl} rel="noopener noreferrer">
+                  {b.value}
+                </a>
+              </td>
+              <td>{b.conditions}</td>
+              <td>{b.version}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<style>
+  .arch {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  ol,
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pipeline {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    background:
+      linear-gradient(180deg, rgb(154 131 255 / 0.08), transparent 40%),
+      var(--surface);
+  }
+
+  .pipeline ol {
+    display: grid;
+    gap: 0;
+  }
+
+  .pipeline li {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+  }
+
+  /* The line joining the steps. */
+  .pipeline li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 52px;
+    bottom: -8px;
+    width: 2px;
+    background: linear-gradient(var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  .step-no {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-raised);
+    color: var(--accent-strong);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .pipeline li div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .pipeline li span:not(.step-no) {
+    color: var(--muted);
+    font-size: 0.93rem;
+  }
+
+  .pipeline-note {
+    margin: 10px 0 0;
+    color: var(--faint);
+    font-size: 0.85rem;
+  }
+
+  .fact-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .fact-list li {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .fact-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .fact-list h3 {
+    font-size: 1.02rem;
+    margin-bottom: 6px;
+  }
+
+  .fact-list p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.93rem;
+  }
+
+  .stack {
+    margin-top: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+  }
+
+  .stack h3 {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 10px;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 20px;
+    margin: 0;
+  }
+
+  dt {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--accent-strong);
+    font-size: 0.92rem;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  .benchmarks {
+    margin-top: 24px;
+  }
+
+  @media (max-width: 960px) {
+    .arch {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .fact-list,
+    dl {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

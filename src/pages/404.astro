@@ -1,0 +1,66 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { characterByName } from '../data/media';
+
+const ghost = characterByName('ghost');
+---
+
+<BaseLayout title="Page not found" description="This page does not exist on animaengine.eu. Find animaEngine downloads, documentation and release notes from the home page." noindex>
+  <section class="not-found">
+    <div class="container">
+      <Image src={ghost.still} width={160} height={160} widths={[160, 320]} sizes="160px" format="webp" alt="" loading="eager" />
+      <p class="eyebrow">404</p>
+      <h1>This page wandered off</h1>
+      <p class="lead">The address may be mistyped, or the page has moved. These might help:</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="/">Home</a>
+        <a class="btn" href="/download/">Download</a>
+        <a class="btn" href="/docs/">Documentation</a>
+      </div>
+      <p class="small muted">
+        <Icon name="info" size={16} class="inline-icon" /> Looking for an older version? See the <a href="/changelog/">changelog</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    padding-block: clamp(64px, 10vw, 140px);
+    text-align: center;
+  }
+
+  .not-found :global(img) {
+    margin: 0 auto 16px;
+    filter: drop-shadow(0 18px 30px rgb(0 0 0 / 0.4));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .not-found :global(img) {
+      animation: float 4s ease-in-out infinite;
+    }
+  }
+
+  @keyframes float {
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .lead {
+    max-width: 40ch;
+    margin-inline: auto;
+  }
+
+  .btn-row {
+    justify-content: center;
+    margin: 28px 0;
+  }
+
+  .small :global(.inline-icon) {
+    display: inline-block;
+    vertical-align: -3px;
+  }
+</style>

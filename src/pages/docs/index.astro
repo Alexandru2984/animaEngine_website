@@ -1,0 +1,228 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { links } from '../../data/site';
+import { breadcrumbs } from '../../lib/structured-data';
+
+const pages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+
+const reference = [
+  { title: 'Configuration reference', text: 'Every field of config.toml.', href: links.docs.config },
+  { title: 'Wayland setup', text: 'sway, Hyprland and river snippets for shortcuts.', href: links.docs.wayland },
+  { title: 'Accessibility', text: 'Screen readers, keyboard reference, themes.', href: links.docs.accessibility },
+  { title: 'Behaviour scripts', text: 'Example Rhai scripts for characters.', href: links.docs.behaviorExamples },
+  { title: 'Stability policy', text: 'What stays the same across 1.x releases.', href: links.docs.stability },
+  { title: 'Architecture', text: 'How the engine is put together.', href: links.docs.architecture },
+  { title: 'Threat model', text: 'The security invariants the app keeps.', href: links.docs.threatModel },
+  { title: 'Contributing', text: 'Building, testing and sending changes.', href: links.contributing },
+];
+---
+
+<BaseLayout
+  title="Documentation"
+  description="Install, configure and use animaEngine: installation, getting started, configuration, Linux desktops and Wayland, and answers to common questions."
+  jsonLd={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Docs', path: '/docs/' }])]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Documentation</p>
+      <h1>Get it running, then make it yours</h1>
+      <p class="lead">
+        Guides adapted from the documentation in the animaEngine repository, checked against release 1.5.1. Each page links
+        to its source.
+      </p>
+    </div>
+  </section>
+
+  <div class="container body">
+    <section aria-labelledby="guides-title">
+      <h2 id="guides-title" class="visually-hidden">Guides</h2>
+      <ol class="guides">
+        {
+          pages.map((page, i) => (
+            <li>
+              <a class="guide" href={`/docs/${page.id}/`}>
+                <span class="num" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span class="guide-title">{page.data.title}</span>
+                <span class="guide-text">{page.data.description}</span>
+                <span class="guide-go" aria-hidden="true">
+                  <Icon name="arrow-right" size={20} />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="reference" aria-labelledby="reference-title">
+      <h2 id="reference-title">Reference in the repository</h2>
+      <p class="muted">The detailed documents live next to the code on GitHub.</p>
+      <ul>
+        {
+          reference.map((item) => (
+            <li>
+              <a href={item.href} rel="noopener noreferrer">
+                <span>
+                  {item.title}
+                  <Icon name="external" size={15} />
+                </span>
+                <span class="ref-text">{item.text}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="help muted">
+        <Icon name="info" size={18} />
+        <span>
+          Stuck? Read the <a href="/docs/faq/">FAQ</a>, then <a href={links.newIssue} rel="noopener noreferrer">open an issue</a>
+          with the diagnostic report from <em>Appearance → About</em>.
+        </span>
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .body {
+    display: grid;
+    gap: 56px;
+    padding-bottom: clamp(64px, 9vw, 120px);
+  }
+
+  .guides {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .guide {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    height: 100%;
+    padding: 22px 56px 22px 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 160ms, transform 160ms;
+  }
+
+  .guide:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .num {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .guide-title {
+    font-size: 1.15rem;
+    font-weight: 750;
+  }
+
+  .guide-text {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .guide-go {
+    position: absolute;
+    right: 20px;
+    top: 24px;
+    color: var(--accent-strong);
+    transition: transform 160ms;
+  }
+
+  .guide:hover .guide-go {
+    transform: translateX(3px);
+  }
+
+  .reference h2 {
+    font-size: 1.5rem;
+  }
+
+  .reference ul {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .reference li a {
+    display: grid;
+    gap: 4px;
+    height: 100%;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    color: var(--text);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .reference li a:hover {
+    border-color: var(--accent);
+  }
+
+  .reference li a > span:first-child {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ref-text {
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+  }
+
+  .help {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .help :global(svg) {
+    flex: none;
+    margin-top: 4px;
+    color: var(--info);
+  }
+
+  @media (max-width: 960px) {
+    .reference ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .guides,
+    .reference ul {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

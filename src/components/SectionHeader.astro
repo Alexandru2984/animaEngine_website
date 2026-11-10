@@ -1,0 +1,16 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  /** id of the heading, for aria-labelledby on the section. */
+  id: string;
+  center?: boolean;
+}
+const { eyebrow, title, id, center = false } = Astro.props;
+---
+
+<header class:list={['section-head', { center }]}>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <h2 id={id}>{title}</h2>
+  {Astro.slots.has('default') && <p class="lead"><slot /></p>}
+</header>
