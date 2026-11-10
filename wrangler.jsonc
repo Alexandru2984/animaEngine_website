@@ -1,0 +1,38 @@
+// Cloudflare Workers Static Assets configuration for animaengine.eu.
+//
+// The site is the prebuilt files in ./dist (`npm run build`), served by
+// Cloudflare's asset layer; headers come from dist/_headers (public/_headers
+// in the source tree).
+//
+// One exception runs code: video files. Static assets answer a `Range`
+// request with the whole file (status 200), and Safari / iOS will not play a
+// <video> without `206 Partial Content`. worker/index.ts handles only the
+// paths in `run_worker_first` and slices the requested bytes; every other
+// request is served by static assets without invoking the Worker.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "animaengine-website",
+  "compatibility_date": "2026-11-10",
+  "main": "./worker/index.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/_astro/*.mp4", "/_astro/*.webm"],
+    // /features -> /features/ (Astro builds every page as a directory index).
+    "html_handling": "auto-trailing-slash",
+    // Unknown paths get dist/404.html with a 404 status.
+    "not_found_handling": "404-page"
+  },
+  // The workers.dev URL is useful for checking a deployment before the
+  // custom domain is attached. Set this to false once animaengine.eu
+  // serves the Worker, so the site is reachable under one hostname only.
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": false
+  }
+  // Attach the custom domain only after approval (see README, "Custom domain"):
+  // "routes": [
+  //   { "pattern": "animaengine.eu", "custom_domain": true }
+  // ]
+}

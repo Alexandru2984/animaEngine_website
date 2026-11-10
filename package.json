@@ -1,0 +1,36 @@
+{
+  "name": "animaengine-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The official website of animaEngine, served as static files from Cloudflare Workers Static Assets.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "npm run build && wrangler dev",
+    "preview:astro": "astro preview",
+    "check": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "validate": "npm run check && npm run test && npm run build && npm run verify:dist",
+    "releases:sync": "node scripts/sync-releases.mjs",
+    "assets:derive": "node scripts/derive-assets.mjs",
+    "deploy:dry-run": "npm run build && npm run verify:dist && wrangler deploy --dry-run",
+    "deploy": "npm run build && npm run verify:dist && wrangler deploy"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.3.0",
+    "astro": "7.4.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^22.20.5",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.160.0"
+  }
+}
