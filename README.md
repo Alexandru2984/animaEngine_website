@@ -297,8 +297,8 @@ site is reachable under one hostname only. Optionally enable *Always Use HTTPS* 
 zone.
 
 Status (10 November 2026): the apex custom domain is attached (`routes` in
-`wrangler.jsonc`). The `www` record and redirect rule, *Always Use HTTPS*, and
-switching off `workers_dev` are still to do in the dashboard.
+`wrangler.jsonc`). The `www` record and redirect rule are set up in the dashboard; *Always Use HTTPS* is on;
+`workers_dev` is off in `wrangler.jsonc`.
 
 ## Testing and checks
 
