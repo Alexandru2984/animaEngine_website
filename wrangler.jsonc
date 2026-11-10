@@ -30,9 +30,10 @@
   "preview_urls": false,
   "observability": {
     "enabled": false
-  }
-  // Attach the custom domain only after approval (see README, "Custom domain"):
-  // "routes": [
-  //   { "pattern": "animaengine.eu", "custom_domain": true }
-  // ]
+  },
+  // The canonical hostname. Cloudflare creates its DNS record and certificate.
+  // www.animaengine.eu is redirected to it by a zone Redirect Rule (README).
+  "routes": [
+    { "pattern": "animaengine.eu", "custom_domain": true }
+  ]
 }

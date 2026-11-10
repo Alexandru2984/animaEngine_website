@@ -296,7 +296,9 @@ left from GitHub Pages).
 site is reachable under one hostname only. Optionally enable *Always Use HTTPS* on the
 zone.
 
-None of these steps has been done yet; they change live DNS and need the owner's approval.
+Status (10 November 2026): the apex custom domain is attached (`routes` in
+`wrangler.jsonc`). The `www` record and redirect rule, *Always Use HTTPS*, and
+switching off `workers_dev` are still to do in the dashboard.
 
 ## Testing and checks
 
