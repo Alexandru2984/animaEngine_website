@@ -18,7 +18,9 @@ everything else is plain files.
 - [Commands](#commands)
 - [Architecture](#architecture)
 - [Downloads and GitHub Releases](#downloads-and-github-releases)
+- [Automatic updates](#automatic-updates)
 - [When animaEngine releases a new version](#when-animaengine-releases-a-new-version)
+- [Download statistics](#download-statistics)
 - [Content](#content)
 - [Assets](#assets)
 - [Deploying to Cloudflare](#deploying-to-cloudflare)
@@ -81,6 +83,7 @@ range Worker; use `npm run preview` for a production-like run.
 | `npm run verify:dist` | Checks the built `dist/` (links, anchors, asset references, CSP compatibility, SEO tags, file-size limits) |
 | `npm run validate` | `check` + `test` + `build` + `verify:dist` — run before every deploy |
 | `npm run releases:sync` | Refresh release data from the GitHub Releases API |
+| `npm run downloads:stats` | Print GitHub's download counts per release and platform (`--json` for machine-readable output) |
 | `npm run assets:derive` | Regenerate the derived files from `site-assets/` |
 | `npm run deploy:dry-run` | Build, verify, and bundle the Worker without uploading anything |
 | `npm run deploy` | Build, verify and deploy to Cloudflare (needs `wrangler login`) |
@@ -162,7 +165,9 @@ never calls GitHub at runtime; it builds from a committed manifest:
    with links outside `https://github.com/` or malformed digests fails the build.
 
 On a network error, an API error or a rate limit, the sync prints the reason and
-changes nothing. An empty release list is refused unless `--allow-empty` is passed.
+changes nothing. When GitHub has nothing new, every file stays byte-for-byte the same
+(`updatedAt` in the manifest only moves when the release data changes), so automated
+runs have nothing to commit. An empty release list is refused unless `--allow-empty` is passed.
 `GITHUB_TOKEN` (optional) raises the API limit from 60 to 5,000 requests an hour;
 `--dry-run` shows what would change.
 
@@ -174,6 +179,7 @@ How files are matched to platforms (`src/lib/downloads.ts`):
 | `*.deb` | Linux | .deb package (suggested when the browser reveals a Debian-family distribution) |
 | `*windows*-setup.exe` | Windows | Installer (suggested on Windows) |
 | `*windows*.zip` | Windows | Portable ZIP |
+| `*.apk` | Android | Android package (none published yet) |
 | `SHA256SUMS*` | — | Checksum list, linked from the download page |
 
 `.rpm`, `.flatpak`, Linux `.tar.*`, `.msi`, `.dmg` and `.pkg` files, and `aarch64`/`arm64`
@@ -182,20 +188,82 @@ code changes. A file whose CPU architecture cannot be told from its name is not 
 
 The latest stable release is the highest semantic version that is not a pre-release
 and has at least one installable file. If there is none, the download page says so and
-links to GitHub Releases. A platform without a file in the release (macOS today) shows
-an explanation instead of a button.
+links to GitHub Releases. A platform without a file in the release shows its status
+instead of a button: macOS "Not supported", Android "Planned" (on the maintainer's word,
+with no release or date). When a release carries an `.apk`, the Android card offers it
+automatically; change Android's status in `src/data/platforms.ts` and
+`src/lib/site-downloads.ts` at the same time.
 
 **OS detection** (`src/lib/os-detect.ts`) uses User-Agent Client Hints where the browser
 offers them (Chromium), including the CPU architecture, and falls back to the User-Agent
 string. Android, iOS/iPadOS (including iPads that report "Macintosh") and ChromeOS are
-told apart from desktop systems. The result only chooses which file is suggested first;
+told apart from desktop systems; Android visitors are told the Android version is planned,
+iOS and ChromeOS visitors that animaEngine is a desktop app. The result only chooses which file is suggested first;
 nothing is downloaded until the visitor clicks, and every file stays listed. Visitors can
 switch systems by hand.
 
+## Automatic updates
+
+`.github/workflows/deploy.yml` keeps the site in step with GitHub:
+
+| Trigger | What happens |
+|---|---|
+| Push to `main` | Validate, then deploy what was pushed |
+| `repository_dispatch` (`animaengine-release`) | Sync release data; if anything changed, commit it, validate, deploy |
+| Every six hours (cron) | Same as above — the safety net if the dispatch is not set up |
+| *Run workflow* in the Actions tab | Sync, validate, deploy |
+
+Nothing is deployed unless `npm run validate` passes. Release-data commits are made by
+`github-actions[bot]`; a push made by the workflow does not start another run.
+
+**One-time setup:**
+
+1. Cloudflare dashboard → *My Profile → API Tokens → Create Token* → template
+   **Edit Cloudflare Workers**, limited to your account and the `animaengine.eu` zone.
+2. Add two repository secrets (*Settings → Secrets and variables → Actions*), or with
+   the GitHub CLI:
+   ```bash
+   gh secret set CLOUDFLARE_API_TOKEN       # paste the token when asked
+   gh secret set CLOUDFLARE_ACCOUNT_ID      # the ID shown by `npx wrangler whoami`
+   ```
+3. Push this repository. From then on a push to `main` deploys.
+
+**Instant updates on release (optional, recommended).** animaEngine's release workflow
+opens a draft that a person publishes. Add this workflow to the **animaEngine**
+repository (`.github/workflows/notify-website.yml`) so publishing a release tells this
+repository straight away instead of waiting for the next six-hourly run:
+
+```yaml
+name: Notify website
+on:
+  release:
+    types: [published]
+permissions: {}
+jobs:
+  notify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Ask animaengine.eu to sync
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+        run: gh api repos/Alexandru2984/animaEngine_website/dispatches -f event_type=animaengine-release
+```
+
+`WEBSITE_DISPATCH_TOKEN` is a fine-grained personal access token with access to the
+`animaEngine_website` repository only and the **Contents: Read and write** permission
+(what the dispatches endpoint requires), stored as a secret in the animaEngine repository.
+
+GitHub disables scheduled workflows in a public repository after 60 days without
+activity; pushes and dispatches still work, and *Enable workflow* in the Actions tab
+turns the schedule back on.
+
 ## When animaEngine releases a new version
 
+With the automatic updates set up, the release data, download buttons, checksums,
+version numbers and changelog update by themselves. By hand:
+
 1. Publish the GitHub release with its files and `SHA256SUMS-<tag>.txt` as usual.
-2. In this repository:
+2. If the workflow is not set up, in this repository:
    ```bash
    npm run releases:sync
    git diff --stat            # releases.json and a new changelog entry
@@ -209,10 +277,26 @@ switch systems by hand.
    - `src/content/docs/*.md` — commands that name a version (installation guide) and
      `checkedAgainst` in each page's front matter;
    - the "1.5.1" mentions in `src/pages/features.astro` and `src/pages/docs/index.astro`.
-4. Commit, then `npm run deploy` (after approval).
+4. Commit and push (the workflow deploys), or `npm run deploy` by hand.
 
 The download page, the homepage download section, the version shown in the hero and
 the changelog all update from the manifest automatically.
+
+## Download statistics
+
+The site tracks nobody: no cookies, no analytics, no click counting. Downloads are
+counted where they happen — every button links to GitHub Releases, and GitHub keeps a
+`download_count` for each file:
+
+```bash
+npm run downloads:stats          # per release, per file, per platform, total
+npm run downloads:stats -- --json
+```
+
+The counts include automated downloads (mirrors, CI, bots) and repeated downloads, and
+the totals leave out the `SHA256SUMS` files. For visits to the site itself, Cloudflare's
+dashboard (*Analytics & Logs* for the zone, *Metrics* for the Worker) shows requests and
+visitors from its own logs, with nothing added to the pages.
 
 ## Content
 
@@ -364,8 +448,8 @@ clip and screenshot, colour contrast of at least 4.5:1, touch targets of at leas
 
 ## Known limitations
 
-- Release data is a snapshot: a new release appears on the site after
-  `npm run releases:sync` and a deploy.
+- Without the dispatch workflow in the animaEngine repository, a new release can take
+  up to six hours to appear (the scheduled sync).
 - The documentation pages are adapted from the repository at 1.5.1 and must be reviewed
   for new releases (see the checklist above).
 - The site has no language versions, although the app and the press kit cover ten
