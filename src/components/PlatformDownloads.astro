@@ -25,7 +25,7 @@ interface Props {
 const { os, options, version, releasesUrl, detail = 'full', headingLevel = 3 } = Astro.props;
 const info = OS_INFO[os];
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
-const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : 'terminal';
+const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'android' ? 'phone' : 'terminal';
 ---
 
 <section class:list={['platform', `platform-${os}`, detail]} id={`downloads-${os}`} data-platform={os} aria-labelledby={`downloads-${os}-title`}>
@@ -88,15 +88,14 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : 'terminal
           </li>
         ))}
       </ul>
-    ) : info.status === 'unsupported' ? (
+    ) : info.status === 'unsupported' || info.status === 'planned' ? (
       <p class="empty">{info.note}</p>
     ) : (
       <p class="empty">
         The {version ? `${version} release` : 'latest release'} has no {info.name} package.{' '}
         <a href={releasesUrl} rel="noopener noreferrer">
           See all releases on GitHub
-        </a>
-        .
+        </a>.
       </p>
     )
   }
@@ -116,6 +115,19 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : 'terminal
         <span>
           {detail === 'full' ? info.note : 'x86_64 packages.'} Flatpak and AUR recipes are{' '}
           <a href="/docs/installation/#flatpak-built-locally">in the repository</a>, not yet published.
+        </span>
+      </p>
+    )
+  }
+  {
+    os === 'android' && options.length === 0 && (
+      <p class="note">
+        <Icon name="info" size={18} />
+        <span>
+          To hear when it is ready, watch the{' '}
+          <a href={links.releases} rel="noopener noreferrer">
+            releases on GitHub
+          </a>.
         </span>
       </p>
     )

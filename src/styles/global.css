@@ -443,6 +443,10 @@ hr {
   color: var(--warn);
 }
 
+.badge-planned {
+  color: var(--accent-strong);
+}
+
 .badge-not-published {
   color: var(--muted);
 }

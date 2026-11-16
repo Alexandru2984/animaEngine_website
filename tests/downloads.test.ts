@@ -66,6 +66,9 @@ describe('classifyAsset', () => {
     expect(classifyAsset('anima-engine_1.6.0-1_arm64.deb')).toEqual({ os: 'linux', arch: 'aarch64', format: 'deb' });
     expect(classifyAsset('animaEngine-1.6.0-linux-x86_64.tar.gz')).toEqual({ os: 'linux', arch: 'x86_64', format: 'tarball' });
     expect(classifyAsset('animaEngine-1.6.0.dmg')).toEqual({ os: 'macos', arch: 'universal', format: 'dmg' });
+    expect(classifyAsset('animaEngine-2.0.0.apk')).toEqual({ os: 'android', arch: 'universal', format: 'apk' });
+    expect(classifyAsset('animaEngine-2.0.0-arm64-v8a.apk')).toEqual({ os: 'android', arch: 'aarch64', format: 'apk' });
+    expect(classifyAsset('animaEngine-2.0.0-armeabi-v7a.apk')).toEqual({ os: 'android', arch: 'armv7', format: 'apk' });
   });
 
   it('refuses packages whose CPU cannot be told, rather than guessing', () => {
@@ -103,6 +106,7 @@ describe('buildDownloads', () => {
     expect(d.linux.map((o) => o.format)).toEqual(['appimage', 'deb']);
     expect(d.windows.map((o) => o.format)).toEqual(['installer', 'zip']);
     expect(d.macos).toEqual([]);
+    expect(d.android).toEqual([]);
     expect(d.linux[0]).toMatchObject({
       id: 'linux-appimage-x86_64',
       fileName: 'animaEngine-1.5.1-x86_64.AppImage',
@@ -112,7 +116,7 @@ describe('buildDownloads', () => {
   });
 
   it('is empty without a release', () => {
-    expect(buildDownloads(null)).toEqual({ linux: [], windows: [], macos: [] });
+    expect(buildDownloads(null)).toEqual({ linux: [], windows: [], macos: [], android: [] });
   });
 });
 
@@ -155,8 +159,13 @@ describe('recommend', () => {
     expect(recommend(linuxOnly, detect('windows'))).toEqual({ kind: 'unavailable', os: 'windows' });
   });
 
-  it('handles phones, ChromeOS and unknown systems without suggesting a file', () => {
-    expect(recommend(downloads, detect('android'))).toEqual({ kind: 'not-desktop', os: 'android' });
+  it('reports Android as unavailable until a release carries an .apk', () => {
+    expect(recommend(downloads, detect('android'))).toEqual({ kind: 'unavailable', os: 'android' });
+    const withApk = buildDownloads(release('2.0.0', [...REAL_151, 'animaEngine-2.0.0.apk']));
+    expect(recommend(withApk, detect('android'))).toMatchObject({ kind: 'download', os: 'android', primary: { format: 'apk' } });
+  });
+
+  it('handles iOS, ChromeOS and unknown systems without suggesting a file', () => {
     expect(recommend(downloads, detect('ios'))).toEqual({ kind: 'not-desktop', os: 'ios' });
     expect(recommend(downloads, detect('chromeos'))).toEqual({ kind: 'not-desktop', os: 'chromeos' });
     expect(recommend(downloads, detect('unknown'))).toEqual({ kind: 'unknown' });

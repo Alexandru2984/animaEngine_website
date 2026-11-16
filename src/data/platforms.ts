@@ -1,18 +1,21 @@
 /**
  * Where animaEngine runs, and how well. Source: README.md ("Wayland",
  * "Windows"), docs/faq.md ("Known problems"), ROADMAP.md ("Non-goals",
- * "Candidates for 1.6"), docs/porting-windows.md. Status describes 1.5.1.
+ * "Candidates for 1.6"), docs/porting-windows.md. Status describes 1.5.x.
+ * Android is planned, on the maintainer's word (November 2026); it has no
+ * release and no date.
  *
  * A platform is listed as supported only when the project says so; a logo or
  * a build target alone is not support.
  */
 
-export type SupportStatus = 'stable' | 'opt-in' | 'experimental' | 'not-published' | 'unsupported';
+export type SupportStatus = 'stable' | 'opt-in' | 'experimental' | 'planned' | 'not-published' | 'unsupported';
 
 export const STATUS_LABELS: Record<SupportStatus, string> = {
   stable: 'Stable',
   'opt-in': 'Opt-in',
   experimental: 'Experimental',
+  planned: 'Planned',
   'not-published': 'Build it yourself',
   unsupported: 'Not supported',
 };
@@ -56,6 +59,13 @@ export const environments: PlatformRow[] = [
     status: 'experimental',
     notes:
       'Built and tested under Wine so far, not yet on a real Windows machine. The files are not signed yet, so SmartScreen asks before running them. Reports are very welcome.',
+  },
+  {
+    id: 'android',
+    name: 'Android',
+    detail: 'In planning',
+    status: 'planned',
+    notes: 'An Android version is planned. There is no release and no date yet.',
   },
   {
     id: 'macos',

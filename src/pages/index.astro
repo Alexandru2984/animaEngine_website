@@ -215,7 +215,7 @@ const heroPoster = await clipPoster(heroClip);
 
   .platforms {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 20px;
     align-items: stretch;
   }
@@ -232,11 +232,19 @@ const heroPoster = await clipPoster(heroClip);
     background: radial-gradient(60% 50% at 50% 0%, rgb(107 79 216 / 0.18), transparent 70%);
   }
 
+  @media (max-width: 1100px) {
+    .platforms {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 1000px) {
     .hero-grid {
       grid-template-columns: minmax(0, 1fr);
     }
+  }
 
+  @media (max-width: 640px) {
     .platforms {
       grid-template-columns: minmax(0, 1fr);
     }

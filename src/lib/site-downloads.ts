@@ -26,6 +26,12 @@ export const OS_INFO: Record<PlatformOS, OSInfo> = {
       environments.find((e) => e.id === 'windows')?.notes ??
       'New in 1.5 and tested under Wine only so far. The files are not signed yet.',
   },
+  android: {
+    name: 'Android',
+    status: 'planned',
+    statusLabel: STATUS_LABELS.planned,
+    note: environments.find((e) => e.id === 'android')?.notes ?? 'An Android version is planned.',
+  },
   macos: {
     name: 'macOS',
     status: 'unsupported',

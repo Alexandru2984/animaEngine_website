@@ -7,7 +7,7 @@
  * Nothing is downloaded until the visitor clicks a link.
  */
 import { ARCH_NAMES, detectPlatform, isDesktop, OS_NAMES, type Detection, type NavigatorLike } from '../lib/os-detect';
-import { ARCH_LABELS, recommend, type DownloadOption, type PlatformOS, type Recommendation } from '../lib/downloads';
+import { ARCH_LABELS, isPlatformOS, recommend, type DownloadOption, type PlatformOS, type Recommendation } from '../lib/downloads';
 import { formatBytes } from '../lib/format';
 import type { PickerPayload } from '../lib/site-downloads';
 import { enableCopyButtons } from './copy';
@@ -108,12 +108,19 @@ function renderPicker(picker: HTMLElement, payload: PickerPayload, detection: De
     node = renderDownload(picker, payload, rec);
   } else if (rec.kind === 'unavailable') {
     const info = payload.os[rec.os];
-    node = renderMessage(
-      picker,
-      info.status === 'unsupported' ? `animaEngine does not run on ${info.name}` : `No ${info.name} package in ${payload.version}`,
-      info.status === 'unsupported' ? info.note : 'This release has no file for this system.',
-      [link('#downloads-linux', 'Linux downloads', 'btn btn-small'), link(payload.releasesUrl, 'All releases', 'btn btn-small btn-ghost')],
-    );
+    const [title, text] =
+      info.status === 'unsupported'
+        ? [`animaEngine does not run on ${info.name}`, info.note]
+        : info.status === 'planned'
+          ? [
+              `animaEngine for ${info.name} is planned`,
+              `${info.note} Until then it runs on Linux and, experimentally, on Windows.`,
+            ]
+          : [`No ${info.name} package in ${payload.version}`, 'This release has no file for this system.'];
+    node = renderMessage(picker, title, text, [
+      link('#downloads-linux', 'Linux downloads', 'btn btn-small'),
+      link(payload.releasesUrl, 'All releases', 'btn btn-small btn-ghost'),
+    ]);
   } else if (rec.kind === 'not-desktop') {
     node = renderMessage(
       picker,
@@ -122,20 +129,20 @@ function renderPicker(picker: HTMLElement, payload: PickerPayload, detection: De
       [],
     );
   } else {
-    node = renderMessage(picker, 'Choose your system', 'Pick Linux, Windows or macOS below to see the matching file.', []);
+    node = renderMessage(picker, 'Choose your system', 'Pick a system below to see the matching file.', []);
   }
 
   body.replaceChildren(...(node ? [node] : []));
   enableCopyButtons(body);
 
-  const shown = isDesktop(detection.os) ? detection.os : null;
+  const shown = isPlatformOS(detection.os) ? detection.os : null;
   for (const control of picker.querySelectorAll<HTMLElement>('[data-pick-os]')) {
     control.setAttribute('aria-pressed', String(control.dataset.pickOs === shown));
   }
 }
 
 function markPlatformCards(detection: Detection) {
-  if (!isDesktop(detection.os)) return;
+  if (!isPlatformOS(detection.os)) return;
   for (const card of document.querySelectorAll<HTMLElement>(`[data-platform="${detection.os}"]`)) {
     card.setAttribute('data-detected', '');
     const tag = card.querySelector<HTMLElement>('[data-detected-tag]');

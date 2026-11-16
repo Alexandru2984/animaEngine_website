@@ -8,7 +8,7 @@ import type { Release, ReleaseAsset } from './releases';
 import type { Detection, DetectedArch } from './os-detect';
 import { compareVersions } from './release-manifest.js';
 
-export type PlatformOS = 'linux' | 'windows' | 'macos';
+export type PlatformOS = 'linux' | 'windows' | 'macos' | 'android';
 export type Arch = 'x86_64' | 'aarch64' | 'armv7' | 'universal';
 export type Format =
   | 'appimage'
@@ -20,7 +20,8 @@ export type Format =
   | 'msi'
   | 'zip'
   | 'dmg'
-  | 'pkg';
+  | 'pkg'
+  | 'apk';
 
 export interface AssetClass {
   os: PlatformOS;
@@ -40,7 +41,12 @@ export interface DownloadOption extends AssetClass {
 
 export type DownloadsByOS = Record<PlatformOS, DownloadOption[]>;
 
-export const PLATFORM_OSES: readonly PlatformOS[] = ['linux', 'windows', 'macos'];
+export const PLATFORM_OSES: readonly PlatformOS[] = ['linux', 'windows', 'android', 'macos'];
+
+/** Whether a detected system is one the site lists downloads for. */
+export function isPlatformOS(os: string): os is PlatformOS {
+  return (PLATFORM_OSES as readonly string[]).includes(os);
+}
 
 export const FORMAT_INFO: Record<Format, { label: string; summary: string; rank: number }> = {
   appimage: { label: 'AppImage', summary: 'One file for most distributions: make it executable and run it.', rank: 1 },
@@ -53,6 +59,7 @@ export const FORMAT_INFO: Record<Format, { label: string; summary: string; rank:
   zip: { label: 'Portable ZIP', summary: 'Unpack it and run it from any folder.', rank: 3 },
   dmg: { label: 'Disk image (.dmg)', summary: 'Open it and drag the app to Applications.', rank: 1 },
   pkg: { label: 'Installer (.pkg)', summary: 'A macOS installer package.', rank: 2 },
+  apk: { label: 'Android package (.apk)', summary: 'Install it directly on your Android device.', rank: 1 },
 };
 
 export const ARCH_LABELS: Record<Arch, string> = {
@@ -65,7 +72,7 @@ export const ARCH_LABELS: Record<Arch, string> = {
 function archFromName(name: string): Arch | null {
   if (/(^|[^a-z0-9])(x86_64|x86-64|amd64|x64|win64)([^a-z0-9]|$)/i.test(name)) return 'x86_64';
   if (/(^|[^a-z0-9])(aarch64|arm64)([^a-z0-9]|$)/i.test(name)) return 'aarch64';
-  if (/(^|[^a-z0-9])(armv7l?|armhf)([^a-z0-9]|$)/i.test(name)) return 'armv7';
+  if (/(^|[^a-z0-9])(armv7l?|armhf|armeabi-v7a)([^a-z0-9]|$)/i.test(name)) return 'armv7';
   if (/(^|[^a-z0-9])universal([^a-z0-9]|$)/i.test(name)) return 'universal';
   return null;
 }
@@ -94,6 +101,7 @@ export function classifyAsset(fileName: string): AssetClass | null {
   else if (/\.exe$/i.test(name)) [os, format] = ['windows', 'installer'];
   else if (/\.dmg$/i.test(name)) [os, format] = ['macos', 'dmg'];
   else if (/\.pkg$/i.test(name)) [os, format] = ['macos', 'pkg'];
+  else if (/\.apk$/i.test(name)) [os, format] = ['android', 'apk'];
   else if (/\.zip$/i.test(name)) {
     if (/windows|win(32|64)?([-_.]|$)/i.test(name)) [os, format] = ['windows', 'zip'];
     else if (/mac(os)?|darwin|osx/i.test(name)) [os, format] = ['macos', 'zip'];
@@ -102,7 +110,8 @@ export function classifyAsset(fileName: string): AssetClass | null {
   }
 
   if (!os || !format) return null;
-  if (!arch) return os === 'macos' ? { os, arch: 'universal', format } : null;
+  // macOS apps and Android packages are often built for every CPU at once.
+  if (!arch) return os === 'macos' || os === 'android' ? { os, arch: 'universal', format } : null;
   return { os, arch, format };
 }
 
@@ -140,7 +149,7 @@ function toOption(asset: ReleaseAsset, cls: AssetClass): DownloadOption {
 
 /** Groups a release's packages by operating system, best format first. */
 export function buildDownloads(release: Pick<Release, 'assets'> | null): DownloadsByOS {
-  const result: DownloadsByOS = { linux: [], windows: [], macos: [] };
+  const result: DownloadsByOS = { linux: [], windows: [], macos: [], android: [] };
   if (!release) return result;
   for (const asset of release.assets) {
     const cls = classifyAsset(asset.name);
@@ -163,9 +172,9 @@ export type Recommendation =
       /** Set when the visitor's CPU has no matching build. */
       archMismatch: DetectedArch | null;
     }
-  /** A desktop OS with no package in the release (e.g. macOS today). */
+  /** A listed system with no package in the release (macOS, Android today). */
   | { kind: 'unavailable'; os: PlatformOS }
-  /** Phones, tablets, ChromeOS: not a platform animaEngine runs on. */
+  /** iOS, ChromeOS: not a system animaEngine runs on or plans for. */
   | { kind: 'not-desktop'; os: Detection['os'] }
   | { kind: 'unknown' };
 
@@ -184,6 +193,7 @@ function preferredFormats(os: PlatformOS, detection: Pick<Detection, 'linuxFamil
     return ['appimage', 'flatpak', 'tarball', 'deb', 'rpm'];
   }
   if (os === 'windows') return ['installer', 'msi', 'zip'];
+  if (os === 'android') return ['apk'];
   return ['dmg', 'pkg', 'zip'];
 }
 
@@ -195,7 +205,7 @@ function preferredFormats(os: PlatformOS, detection: Pick<Detection, 'linuxFamil
 export function recommend(downloads: DownloadsByOS, detection: Detection): Recommendation {
   const { os, arch } = detection;
   if (os === 'unknown') return { kind: 'unknown' };
-  if (os !== 'linux' && os !== 'windows' && os !== 'macos') return { kind: 'not-desktop', os };
+  if (!isPlatformOS(os)) return { kind: 'not-desktop', os };
 
   const options = downloads[os];
   if (options.length === 0) return { kind: 'unavailable', os };

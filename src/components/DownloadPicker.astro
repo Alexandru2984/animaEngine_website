@@ -20,6 +20,7 @@ const initial = recommend(ctx.downloads, { ...UNKNOWN, os: 'linux' });
 const systems = [
   { os: 'linux', label: 'Linux' },
   { os: 'windows', label: 'Windows' },
+  { os: 'android', label: 'Android' },
   { os: 'macos', label: 'macOS' },
 ] as const;
 ---
@@ -111,10 +112,11 @@ const systems = [
 
   .segmented {
     display: inline-flex;
+    flex-wrap: wrap;
     padding: 4px;
     gap: 4px;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 24px;
     background: var(--bg-raised);
   }
 
@@ -122,7 +124,7 @@ const systems = [
     display: inline-grid;
     place-items: center;
     min-height: 40px;
-    padding: 6px 16px;
+    padding: 6px 14px;
     border-radius: 999px;
     color: var(--muted);
     font-weight: 700;
