@@ -23,7 +23,7 @@ const rendered = await Promise.all(
   }),
 );
 
-const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS' } as const;
+const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 'Android' } as const;
 ---
 
 <BaseLayout
@@ -135,7 +135,7 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS' } as const
       }
 
       <p class="synced small muted">
-        Release data last synced from GitHub on <time datetime={manifest.syncedAt}>{formatDate(manifest.syncedAt)}</time>.
+        Release data last changed on <time datetime={manifest.updatedAt}>{formatDate(manifest.updatedAt)}</time>.
         For anything newer, see <a href={`https://github.com/${manifest.repository}/releases`} rel="noopener noreferrer">GitHub Releases</a>.
       </p>
     </div>

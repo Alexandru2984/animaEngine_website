@@ -26,7 +26,7 @@ const releaseSchema = z.object({
 
 export const manifestSchema = z.object({
   repository: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
-  syncedAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
   releases: z.array(releaseSchema),
   tagsWithoutRelease: z.array(z.string()),
 });

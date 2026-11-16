@@ -137,7 +137,7 @@ describe('normalizeRelease', () => {
     const release = normalizeRelease(apiRelease())!;
     const manifest = parseManifest({
       repository: 'Alexandru2984/animaEngine',
-      syncedAt: '2026-11-10T20:00:00.000Z',
+      updatedAt: '2026-11-10T20:00:00.000Z',
       releases: [release],
       tagsWithoutRelease: ['v1.4.0'],
     });
@@ -157,12 +157,12 @@ describe('parseManifest', () => {
     const release = normalizeRelease(apiRelease())!;
     release.assets[0]!.url = 'https://example.com/evil.deb';
     expect(() =>
-      parseManifest({ repository: 'a/b', syncedAt: '2026-11-10T20:00:00.000Z', releases: [release], tagsWithoutRelease: [] }),
+      parseManifest({ repository: 'a/b', updatedAt: '2026-11-10T20:00:00.000Z', releases: [release], tagsWithoutRelease: [] }),
     ).toThrow(/invalid/);
   });
 
   it('accepts an empty release list', () => {
-    expect(parseManifest({ repository: 'a/b', syncedAt: '2026-11-10T20:00:00.000Z', releases: [], tagsWithoutRelease: [] }).releases).toEqual([]);
+    expect(parseManifest({ repository: 'a/b', updatedAt: '2026-11-10T20:00:00.000Z', releases: [], tagsWithoutRelease: [] }).releases).toEqual([]);
   });
 });
 
