@@ -18,6 +18,7 @@
     "verify:dist": "node scripts/verify-dist.mjs",
     "validate": "npm run check && npm run test && npm run build && npm run verify:dist",
     "releases:sync": "node scripts/sync-releases.mjs",
+    "downloads:stats": "node scripts/download-stats.mjs",
     "assets:derive": "node scripts/derive-assets.mjs",
     "deploy:dry-run": "npm run build && npm run verify:dist && wrangler deploy --dry-run",
     "deploy": "npm run build && npm run verify:dist && wrangler deploy"
