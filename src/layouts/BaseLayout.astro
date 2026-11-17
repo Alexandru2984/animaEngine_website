@@ -1,7 +1,9 @@
 ---
-import '@fontsource-variable/manrope/wght.css';
+import '@fontsource-variable/bricolage-grotesque/opsz.css';
+import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
 import '../styles/global.css';
-import fontLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
+import displayLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
+import textLatin from '@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2?url';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { site } from '../data/site';
@@ -37,7 +39,8 @@ const ld = jsonLd.map((obj) => JSON.stringify(obj).replace(/</g, '\\u003c'));
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
 
-    <link rel="preload" href={fontLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={displayLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={textLatin} as="font" type="font/woff2" crossorigin />
     {preloadImage && <link rel="preload" href={preloadImage} as="image" type="image/webp" fetchpriority="high" />}
 
     <link rel="icon" href="/favicon.ico" sizes="48x48" />

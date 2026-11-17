@@ -1,0 +1,83 @@
+---
+/**
+ * The top of every inner page: a strip of the same dusk, with the hills'
+ * silhouette as its lower edge. No characters here; the reading starts below.
+ */
+import { FAR_HILL, NEAR_HILL, hillPath } from '../lib/stage/hills';
+
+interface Props {
+  title: string;
+  /** Narrow column for reading pages. */
+  narrow?: boolean;
+}
+const { title, narrow = false } = Astro.props;
+---
+
+<header class="page-head">
+  <div class:list={['container', { 'container-narrow': narrow }]}>
+    <h1>{title}</h1>
+    {
+      Astro.slots.has('default') && (
+        <div class="page-lead">
+          <slot />
+        </div>
+      )
+    }
+  </div>
+  <div class="ridge" aria-hidden="true">
+    <svg class="far" viewBox="0 0 1440 240" preserveAspectRatio="none" focusable="false"><path d={hillPath(FAR_HILL)} /></svg>
+    <svg class="near" viewBox="0 0 1440 240" preserveAspectRatio="none" focusable="false"><path d={hillPath(NEAR_HILL)} /></svg>
+  </div>
+</header>
+
+<style>
+  .page-head {
+    position: relative;
+    padding-block: clamp(48px, 7vw, 96px) clamp(88px, 10vw, 128px);
+    background: linear-gradient(180deg, var(--sky-top) 0%, #2d2256 100%);
+    overflow: hidden;
+  }
+
+  h1 {
+    position: relative;
+    z-index: 1;
+    max-width: 18ch;
+    margin-bottom: var(--s-4);
+  }
+
+  .page-lead {
+    position: relative;
+    z-index: 1;
+    max-width: 40rem;
+    color: var(--haze);
+    font-size: var(--t-lg);
+    line-height: 1.5;
+  }
+
+  .page-lead :global(p) {
+    margin: 0;
+  }
+
+  .ridge {
+    position: absolute;
+    inset: auto 0 -1px;
+    height: clamp(56px, 7vw, 88px);
+    pointer-events: none;
+  }
+
+  .ridge svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .far path {
+    fill: var(--hill-far);
+    opacity: 0.55;
+  }
+
+  .near path {
+    fill: var(--night);
+  }
+</style>
