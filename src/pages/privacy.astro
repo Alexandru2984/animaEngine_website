@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 import { links } from '../data/site';
 ---
 
@@ -7,15 +8,12 @@ import { links } from '../data/site';
   title="Privacy"
   description="animaEngine collects nothing: the app makes no network connection, and this website sets no cookies and runs no analytics."
 >
-  <section class="page-hero">
-    <div class="container container-narrow">
-      <p class="eyebrow">Privacy</p>
-      <h1>Nothing to collect</h1>
-      <p class="lead">Neither the app nor this website gathers information about you.</p>
-    </div>
-  </section>
+  <PageHeader title="Nothing to collect" narrow>
+    <p>Neither the app nor this website gathers information about you.</p>
+  </PageHeader>
 
-  <div class="container container-narrow prose body">
+  <div class="container container-narrow body">
+    <div class="prose">
     <h2>The app</h2>
     <p>
       <strong>animaEngine makes no network connection of any kind</strong>: no telemetry, no crash reporting, no update
@@ -56,6 +54,7 @@ import { links } from '../data/site';
       Questions about privacy: <a href={links.issues} rel="noopener noreferrer">open an issue</a>, or, for a security
       problem, follow the <a href={links.security} rel="noopener noreferrer">security policy</a>.
     </p>
+    </div>
   </div>
 </BaseLayout>
 

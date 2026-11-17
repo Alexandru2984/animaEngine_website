@@ -77,23 +77,20 @@ const systems = [
 
 <style>
   .picker {
-    padding: clamp(20px, 3vw, 32px);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-l);
-    background:
-      radial-gradient(90% 120% at 0% 0%, rgb(154 131 255 / 0.16), transparent 60%),
-      var(--surface);
-    box-shadow: 0 30px 80px -40px rgb(107 79 216 / 0.6);
+    padding: clamp(20px, 3.5vw, 40px);
+    border: 1px solid var(--line);
+    border-radius: var(--r-media);
+    background: var(--dusk);
   }
 
   .picker-head h2 {
-    font-size: 1.5rem;
-    margin-bottom: 4px;
+    font-size: var(--t-xl);
+    margin-bottom: var(--s-1);
   }
 
   .picker-status {
     margin: 0;
-    color: var(--muted);
+    color: var(--haze);
   }
 
   .picker-body:not(:empty) {
@@ -106,8 +103,8 @@ const systems = [
     align-items: center;
     gap: 10px 14px;
     margin-top: 20px;
-    color: var(--muted);
-    font-size: 0.95rem;
+    color: var(--haze);
+    font-size: var(--t-sm);
   }
 
   .segmented {
@@ -115,9 +112,9 @@ const systems = [
     flex-wrap: wrap;
     padding: 4px;
     gap: 4px;
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--r-control);
+    background: var(--night);
   }
 
   .segmented a {
@@ -125,19 +122,19 @@ const systems = [
     place-items: center;
     min-height: 40px;
     padding: 6px 14px;
-    border-radius: 999px;
-    color: var(--muted);
+    border-radius: 7px;
+    color: var(--haze);
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
   }
 
   .segmented a:hover {
-    color: var(--text);
+    color: var(--moon);
   }
 
   .segmented a[aria-pressed='true'] {
-    background: var(--accent);
-    color: var(--accent-ink);
+    background: var(--moon);
+    color: var(--star-ink);
   }
 </style>

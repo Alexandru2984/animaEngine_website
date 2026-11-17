@@ -1,62 +1,47 @@
 ---
-import Icon from './Icon.astro';
-import { benchmarks, performanceFacts, pipeline, stack } from '../data/architecture';
+import { benchmarks, performanceFacts, pipeline } from '../data/architecture';
 import { links } from '../data/site';
-
-const factIcons = ['zap', 'battery', 'cpu', 'layers'] as const;
 ---
 
 <div class="arch">
-  <div class="pipeline" role="group" aria-label="How a picture reaches your screen">
+  <p class="stack">
+    One native program, written in <strong>Rust</strong>. It draws with <strong>wgpu</strong> (Vulkan or OpenGL on Linux; DX12,
+    Vulkan or GL on Windows), opens its windows with <strong>winit</strong> and, for native Wayland, Smithay's client toolkit,
+    and builds its settings panel with <strong>egui</strong> and AccessKit. Behaviour scripts run in <strong>Rhai</strong>,
+    sandboxed. No Electron, no Chromium, no web view.
+  </p>
+
+  <figure class="pipeline">
     <ol>
       {
-        pipeline.map((step, i) => (
+        pipeline.map((stepItem, i) => (
           <li>
-            <span class="step-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <div>
-              <strong>{step.title}</strong>
-              <span>{step.text}</span>
-            </div>
+            <span class="no" aria-hidden="true">
+              {i + 1}
+            </span>
+            <strong>{stepItem.title}</strong>
+            <span class="what">{stepItem.text}</span>
           </li>
         ))
       }
     </ol>
-    <p class="pipeline-note">
-      Based on the project’s <a href={links.docs.architecture} rel="noopener noreferrer">architecture notes</a>.
-    </p>
-  </div>
+    <figcaption>
+      How a picture reaches your screen, from the project's <a href={links.docs.architecture} rel="noopener noreferrer"
+        >architecture notes</a
+      >.
+    </figcaption>
+  </figure>
 
-  <div class="facts">
-    <ul class="fact-list">
-      {
-        performanceFacts.map((fact, i) => (
-          <li>
-            <span class="fact-icon">
-              <Icon name={factIcons[i % factIcons.length]!} />
-            </span>
-            <div>
-              <h3>{fact.title}</h3>
-              <p>{fact.text}</p>
-            </div>
-          </li>
-        ))
-      }
-    </ul>
-
-    <div class="stack">
-      <h3>Built with</h3>
-      <dl>
-        {
-          stack.map((item) => (
-            <div>
-              <dt>{item.name}</dt>
-              <dd>{item.role}</dd>
-            </div>
-          ))
-        }
-      </dl>
-    </div>
-  </div>
+  <dl class="facts">
+    {
+      performanceFacts.map((fact) => (
+        <div>
+          <dt>{fact.title}</dt>
+          <dd>{fact.text}</dd>
+        </div>
+      ))
+    }
+  </dl>
 </div>
 
 {
@@ -92,168 +77,120 @@ const factIcons = ['zap', 'battery', 'cpu', 'layers'] as const;
 }
 
 <style>
-  .arch {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 28px;
-    align-items: start;
+  .stack {
+    max-width: 62ch;
+    margin-bottom: var(--s-8);
+    color: var(--haze);
+    font-size: var(--t-lg);
+    line-height: 1.55;
   }
 
-  ol,
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .pipeline {
-    padding: 24px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    background:
-      linear-gradient(180deg, rgb(154 131 255 / 0.08), transparent 40%),
-      var(--surface);
-  }
-
-  .pipeline ol {
-    display: grid;
-    gap: 0;
-  }
-
-  .pipeline li {
-    position: relative;
-    display: flex;
-    gap: 16px;
-    padding: 14px 0;
-  }
-
-  /* The line joining the steps. */
-  .pipeline li:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 19px;
-    top: 52px;
-    bottom: -8px;
-    width: 2px;
-    background: linear-gradient(var(--accent), transparent);
-    opacity: 0.5;
-  }
-
-  .step-no {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    border: 1px solid var(--border-strong);
-    background: var(--bg-raised);
-    color: var(--accent-strong);
-    font-family: var(--mono);
-    font-size: 0.85rem;
+  .stack strong {
+    color: var(--moon);
     font-weight: 700;
   }
 
-  .pipeline li div {
-    display: grid;
-    gap: 2px;
+  /* A strip of frames, one per step: the order matters, so they are numbered. */
+  .pipeline {
+    margin: 0 0 var(--s-8);
   }
 
-  .pipeline li span:not(.step-no) {
-    color: var(--muted);
-    font-size: 0.93rem;
-  }
-
-  .pipeline-note {
-    margin: 10px 0 0;
-    color: var(--faint);
-    font-size: 0.85rem;
-  }
-
-  .fact-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-  .fact-list li {
-    padding: 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-  }
-
-  .fact-icon {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    margin-bottom: 12px;
-    border-radius: 12px;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-  }
-
-  .fact-list h3 {
-    font-size: 1.02rem;
-    margin-bottom: 6px;
-  }
-
-  .fact-list p {
+  .pipeline ol {
+    list-style: none;
     margin: 0;
-    color: var(--muted);
-    font-size: 0.93rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border: 1px solid var(--line);
+    border-radius: var(--r-media);
+    overflow: hidden;
   }
 
-  .stack {
-    margin-top: 16px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-raised);
+  .pipeline li {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    padding: var(--s-5) var(--s-4);
+    background: var(--dusk);
   }
 
-  .stack h3 {
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-bottom: 10px;
+  .pipeline li + li {
+    border-left: 1px solid var(--line);
   }
 
-  dl {
+  .no {
+    color: var(--star);
+    font-family: var(--display);
+    font-size: var(--t-xl);
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .pipeline strong {
+    font-family: var(--display);
+    font-size: var(--t-lg);
+    font-weight: 760;
+    letter-spacing: -0.01em;
+  }
+
+  .what {
+    color: var(--haze);
+    font-size: var(--t-sm);
+  }
+
+  .pipeline figcaption {
+    margin-top: var(--s-3);
+    color: var(--mist);
+    font-size: var(--t-sm);
+  }
+
+  .facts {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px 20px;
+    gap: var(--s-6) var(--s-8);
     margin: 0;
   }
 
   dt {
-    font-family: var(--mono);
-    font-weight: 700;
-    color: var(--accent-strong);
-    font-size: 0.92rem;
+    margin-bottom: var(--s-2);
+    font-family: var(--display);
+    font-size: var(--t-lg);
+    font-weight: 760;
+    letter-spacing: -0.01em;
   }
 
   dd {
     margin: 0;
-    color: var(--muted);
-    font-size: 0.88rem;
+    color: var(--haze);
+    max-width: 52ch;
   }
 
   .benchmarks {
-    margin-top: 24px;
+    margin-top: var(--s-7);
   }
 
   @media (max-width: 960px) {
-    .arch {
+    .pipeline ol {
       grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pipeline li {
+      grid-template-columns: 2.2rem minmax(0, 1fr);
+      column-gap: var(--s-3);
+    }
+
+    .pipeline li .no {
+      grid-row: span 2;
+    }
+
+    .pipeline li + li {
+      border-left: 0;
+      border-top: 1px solid var(--line);
     }
   }
 
-  @media (max-width: 560px) {
-    .fact-list,
-    dl {
+  @media (max-width: 640px) {
+    .facts {
       grid-template-columns: minmax(0, 1fr);
     }
   }

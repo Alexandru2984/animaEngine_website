@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import Icon from '../../components/Icon.astro';
 import { links } from '../../data/site';
 import { breadcrumbs } from '../../lib/structured-data';
@@ -24,33 +25,20 @@ const reference = [
   description="Install, configure and use animaEngine: installation, getting started, configuration, Linux desktops and Wayland, and answers to common questions."
   jsonLd={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Docs', path: '/docs/' }])]}
 >
-  <section class="page-hero">
-    <div class="container">
-      <p class="eyebrow">Documentation</p>
-      <h1>Get it running, then make it yours</h1>
-      <p class="lead">
-        Guides adapted from the documentation in the animaEngine repository, checked against release 1.5.1. Each page links
-        to its source.
-      </p>
-    </div>
-  </section>
+  <PageHeader title="Get it running, then make it yours">
+    <p>Guides adapted from the documentation in the animaEngine repository, checked against release 1.5.1. Each page links to its source.</p>
+  </PageHeader>
 
   <div class="container body">
     <section aria-labelledby="guides-title">
       <h2 id="guides-title" class="visually-hidden">Guides</h2>
       <ol class="guides">
         {
-          pages.map((page, i) => (
+          pages.map((page) => (
             <li>
               <a class="guide" href={`/docs/${page.id}/`}>
-                <span class="num" aria-hidden="true">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
                 <span class="guide-title">{page.data.title}</span>
                 <span class="guide-text">{page.data.description}</span>
-                <span class="guide-go" aria-hidden="true">
-                  <Icon name="arrow-right" size={20} />
-                </span>
               </a>
             </li>
           ))
@@ -76,7 +64,7 @@ const reference = [
           ))
         }
       </ul>
-      <p class="help muted">
+      <p class="note help">
         <Icon name="info" size={18} />
         <span>
           Stuck? Read the <a href="/docs/faq/">FAQ</a>, then <a href={links.newIssue} rel="noopener noreferrer">open an issue</a>
@@ -90,103 +78,68 @@ const reference = [
 <style>
   .body {
     display: grid;
-    gap: 56px;
-    padding-bottom: clamp(64px, 9vw, 120px);
+    gap: clamp(56px, 7vw, 88px);
+    padding-block: var(--s-7) clamp(72px, 10vw, 136px);
   }
 
+  /* The guides, in reading order, as a list of rows. */
   .guides {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .guides li {
+    border-bottom: 1px solid var(--line);
   }
 
   .guide {
-    position: relative;
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 4px 16px;
-    height: 100%;
-    padding: 22px 56px 22px 22px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    background: var(--surface);
-    color: var(--text);
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--s-2) var(--s-6);
+    padding: var(--s-5) 0;
+    color: var(--moon);
     text-decoration: none;
-    transition: border-color 160ms, transform 160ms;
-  }
-
-  .guide:hover {
-    border-color: var(--accent);
-    color: var(--text);
-  }
-
-  .num {
-    grid-row: span 2;
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: 0.85rem;
   }
 
   .guide-title {
-    font-size: 1.15rem;
-    font-weight: 750;
+    font-family: var(--display);
+    font-size: var(--t-xl);
+    font-weight: 760;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
   }
 
   .guide-text {
-    color: var(--muted);
-    font-size: 0.95rem;
+    color: var(--haze);
+    align-self: center;
   }
 
-  .guide-go {
-    position: absolute;
-    right: 20px;
-    top: 24px;
-    color: var(--accent-strong);
-    transition: transform 160ms;
-  }
-
-  .guide:hover .guide-go {
-    transform: translateX(3px);
+  .guide:hover .guide-title {
+    text-decoration: underline 2px var(--star);
+    text-underline-offset: 6px;
   }
 
   .reference h2 {
-    font-size: 1.5rem;
+    margin-bottom: var(--s-2);
   }
 
   .reference ul {
     list-style: none;
-    margin: 20px 0 0;
+    margin: var(--s-6) 0 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
+    gap: var(--s-5) var(--s-6);
   }
 
   .reference li a {
     display: grid;
     gap: 4px;
-    height: 100%;
-    padding: 16px 18px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-raised);
-    color: var(--text);
+    color: var(--moon);
     font-weight: 700;
     text-decoration: none;
-  }
-
-  .reference li a:hover {
-    border-color: var(--accent);
   }
 
   .reference li a > span:first-child {
@@ -195,22 +148,18 @@ const reference = [
     gap: 6px;
   }
 
+  .reference li a:hover > span:first-child {
+    text-decoration: underline;
+  }
+
   .ref-text {
-    color: var(--muted);
-    font-size: 0.88rem;
-    font-weight: 500;
+    color: var(--haze);
+    font-size: var(--t-sm);
+    font-weight: 400;
   }
 
   .help {
-    display: flex;
-    gap: 10px;
-    margin-top: 24px;
-  }
-
-  .help :global(svg) {
-    flex: none;
-    margin-top: 4px;
-    color: var(--info);
+    margin-top: var(--s-7);
   }
 
   @media (max-width: 960px) {
@@ -220,7 +169,10 @@ const reference = [
   }
 
   @media (max-width: 640px) {
-    .guides,
+    .guide {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .reference ul {
       grid-template-columns: minmax(0, 1fr);
     }

@@ -22,7 +22,7 @@ const toc = headings.filter((h) => h.depth === 2);
 ---
 
 <BaseLayout
-  title={`${title} · Docs`}
+  title={`${title} (Docs)`}
   description={description}
   ogType="article"
   jsonLd={[
@@ -139,12 +139,10 @@ const toc = headings.filter((h) => h.depth === 2);
     margin: 0 0 10px;
     font-size: 0.8rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
   }
 
   .side-title a {
-    color: var(--faint);
+    color: var(--mist);
     text-decoration: none;
   }
 
@@ -152,7 +150,7 @@ const toc = headings.filter((h) => h.depth === 2);
     list-style: none;
     margin: 0;
     padding: 0;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid var(--line-soft);
   }
 
   .sidebar li a {
@@ -160,19 +158,19 @@ const toc = headings.filter((h) => h.depth === 2);
     margin-left: -1px;
     padding: 8px 14px;
     border-left: 2px solid transparent;
-    color: var(--muted);
+    color: var(--haze);
     font-size: 0.95rem;
     font-weight: 600;
     text-decoration: none;
   }
 
   .sidebar li a:hover {
-    color: var(--text);
+    color: var(--moon);
   }
 
   .sidebar li a[aria-current='page'] {
-    border-left-color: var(--accent);
-    color: var(--text);
+    border-left-color: var(--violet);
+    color: var(--moon);
   }
 
   .crumbs ol {
@@ -181,7 +179,7 @@ const toc = headings.filter((h) => h.depth === 2);
     list-style: none;
     margin: 0 0 16px;
     padding: 0;
-    color: var(--faint);
+    color: var(--mist);
     font-size: 0.9rem;
   }
 
@@ -191,7 +189,7 @@ const toc = headings.filter((h) => h.depth === 2);
   }
 
   .crumbs a {
-    color: var(--muted);
+    color: var(--haze);
   }
 
   .content h1 {
@@ -205,19 +203,17 @@ const toc = headings.filter((h) => h.depth === 2);
   .toc {
     margin: 28px 0 8px;
     padding: 16px 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-control);
+    background: var(--dusk);
     max-width: 72ch;
   }
 
   .toc p {
     margin: 0 0 6px;
-    color: var(--faint);
+    color: var(--mist);
     font-size: 0.8rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
   }
 
   .toc ul {
@@ -240,16 +236,16 @@ const toc = headings.filter((h) => h.depth === 2);
     max-width: 72ch;
     margin-top: 48px;
     padding: 16px 18px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-raised);
-    color: var(--muted);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-control);
+    background: var(--night);
+    color: var(--haze);
     font-size: 0.9rem;
   }
 
   .source :global(svg) {
     flex: none;
-    color: var(--accent-strong);
+    color: var(--violet);
   }
 
   .source p {
@@ -268,22 +264,22 @@ const toc = headings.filter((h) => h.depth === 2);
     display: grid;
     gap: 2px;
     padding: 14px 18px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: var(--text);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-control);
+    background: var(--dusk);
+    color: var(--moon);
     font-weight: 700;
     text-decoration: none;
   }
 
   .pager-link span {
-    color: var(--faint);
+    color: var(--mist);
     font-size: 0.8rem;
     font-weight: 600;
   }
 
   .pager-link:hover {
-    border-color: var(--accent);
+    border-color: var(--violet);
   }
 
   .pager-link.next {
@@ -312,13 +308,13 @@ const toc = headings.filter((h) => h.depth === 2);
     .sidebar li a {
       margin: 0;
       padding: 6px 12px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--line-soft);
       border-radius: 999px;
       font-size: 0.88rem;
     }
 
     .sidebar li a[aria-current='page'] {
-      border-color: var(--accent);
+      border-color: var(--violet);
     }
 
     .toc ul {

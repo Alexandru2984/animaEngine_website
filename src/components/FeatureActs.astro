@@ -1,0 +1,128 @@
+---
+/**
+ * The homepage's features: four groups, each next to the real recording that
+ * shows it, alternating sides. Then three short facts in a row.
+ */
+import ClipPlayer from './ClipPlayer.astro';
+import { featureFacts, featureGroups } from '../data/features';
+import { clips } from '../data/media';
+---
+
+<div class="acts">
+  {
+    featureGroups.map((group, i) => {
+      const clip = clips.find((c) => c.id === group.clip)!;
+      return (
+        <article class:list={['act', { flip: i % 2 === 1 }]} aria-labelledby={`act-${group.id}`}>
+          <div class="act-text">
+            <h3 id={`act-${group.id}`}>{group.title}</h3>
+            <p class="act-summary">{group.summary}</p>
+            <ul>
+              {group.points.map((point) => (
+                <li>{point}</li>
+              ))}
+            </ul>
+          </div>
+          <ClipPlayer clip={clip} autoplay idPrefix={`act-${group.id}`} class="act-media" />
+        </article>
+      );
+    })
+  }
+</div>
+
+<dl class="facts">
+  {
+    featureFacts.map((fact) => (
+      <div>
+        <dt>{fact.title}</dt>
+        <dd>{fact.text}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .acts {
+    display: grid;
+    gap: clamp(64px, 9vw, 120px);
+  }
+
+  .act {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .act.flip {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .act.flip .act-text {
+    order: 2;
+  }
+
+  .act h3 {
+    font-size: var(--t-2xl);
+    letter-spacing: -0.025em;
+    margin-bottom: var(--s-3);
+  }
+
+  .act-summary {
+    color: var(--haze);
+    font-size: var(--t-lg);
+    line-height: 1.5;
+    margin-bottom: var(--s-5);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--moon);
+    font-size: var(--t-sm);
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6);
+    margin: clamp(80px, 10vw, 128px) 0 0;
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--line);
+  }
+
+  dt {
+    margin-bottom: var(--s-2);
+    font-family: var(--display);
+    font-size: var(--t-lg);
+    font-weight: 760;
+    letter-spacing: -0.01em;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--haze);
+  }
+
+  @media (max-width: 900px) {
+    .act,
+    .act.flip {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .act.flip .act-text {
+      order: 0;
+    }
+
+    .facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

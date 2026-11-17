@@ -25,35 +25,31 @@ interface Props {
 const { os, options, version, releasesUrl, detail = 'full', headingLevel = 3 } = Astro.props;
 const info = OS_INFO[os];
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
-const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'android' ? 'phone' : 'terminal';
 ---
 
 <section class:list={['platform', `platform-${os}`, detail]} id={`downloads-${os}`} data-platform={os} aria-labelledby={`downloads-${os}-title`}>
   <header class="head">
-    <span class="os-icon"><Icon name={icon} /></span>
-    <div class="head-text">
-      <Heading id={`downloads-${os}-title`}>{info.name}</Heading>
-      <StatusBadge status={info.status} />
-    </div>
+    <Heading id={`downloads-${os}-title`}>{info.name}</Heading>
+    <StatusBadge status={info.status} />
     <span class="detected-tag" data-detected-tag hidden>Your system</span>
   </header>
 
   {
     options.length > 0 ? (
       <ul class="options">
-        {options.map((option, i) => (
+        {options.map((option) => (
           <li class="option" id={`dl-${option.id}`}>
             <div class="option-text">
               <span class="option-label">{option.label}</span>
               <span class="option-summary">{option.summary}</span>
               {detail === 'full' && (
                 <span class="option-meta">
-                  <code>{option.fileName}</code> · {ARCH_LABELS[option.arch]} · {formatBytes(option.size)}
+                  <code>{option.fileName}</code>, {ARCH_LABELS[option.arch]}, {formatBytes(option.size)}
                 </span>
               )}
             </div>
             <a
-              class:list={['btn', i === 0 ? 'btn-primary' : null, detail === 'compact' ? 'btn-small' : null]}
+              class:list={['btn', detail === 'compact' ? 'btn-small' : null]}
               href={option.url}
               rel="noopener noreferrer"
             >
@@ -93,16 +89,14 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'a
     ) : (
       <p class="empty">
         The {version ? `${version} release` : 'latest release'} has no {info.name} package.{' '}
-        <a href={releasesUrl} rel="noopener noreferrer">
-          See all releases on GitHub
-        </a>.
+        <a href={releasesUrl} rel="noopener noreferrer">See all releases on GitHub</a>.
       </p>
     )
   }
 
   {
     os === 'windows' && options.length > 0 && (
-      <p class="note warn">
+      <p class="note note-warn">
         <Icon name="alert" size={18} />
         <span>{detail === 'full' ? info.note : 'New in 1.5, tested under Wine so far; not signed yet, so SmartScreen asks first.'}</span>
       </p>
@@ -125,9 +119,7 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'a
         <Icon name="info" size={18} />
         <span>
           To hear when it is ready, watch the{' '}
-          <a href={links.releases} rel="noopener noreferrer">
-            releases on GitHub
-          </a>.
+          <a href={links.releases} rel="noopener noreferrer">releases on GitHub</a>.
         </span>
       </p>
     )
@@ -150,60 +142,39 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'a
 </script>
 
 <style>
+  /* One row per system: the name and its status on the left, the files on the right. */
   .platform {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 22px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    background: var(--surface);
-    transition: border-color 200ms, box-shadow 200ms;
-  }
-
-  .platform[data-detected] {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 20px 50px -24px rgb(154 131 255 / 0.6);
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--s-3) var(--s-6);
+    padding: var(--s-6) 0;
+    border-top: 1px solid var(--line);
   }
 
   .head {
     display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .os-icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-  }
-
-  .head-text {
-    display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 12px;
-    flex: 1;
+    align-items: baseline;
+    align-content: start;
+    gap: var(--s-2) var(--s-4);
   }
 
-  .head-text :is(h2, h3) {
+  .head :is(h2, h3) {
     margin: 0;
-    font-size: 1.3rem;
+    width: 100%;
+    font-size: var(--t-xl);
   }
 
   .detected-tag {
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--accent-ink);
-    font-size: 0.78rem;
-    font-weight: 800;
-    white-space: nowrap;
+    color: var(--star);
+    font-size: var(--t-sm);
+    font-weight: 700;
+  }
+
+  .options,
+  .empty {
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 
   .options {
@@ -211,22 +182,19 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'a
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 12px;
+    gap: var(--s-4);
   }
 
   .option {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px 16px;
+    gap: var(--s-2) var(--s-5);
     align-items: center;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-raised);
   }
 
-  .option:target {
-    border-color: var(--accent);
+  .option + .option {
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line-soft);
   }
 
   .option-text {
@@ -236,87 +204,71 @@ const icon = os === 'windows' ? 'window' : os === 'macos' ? 'laptop' : os === 'a
   }
 
   .option-label {
-    font-weight: 750;
+    font-weight: 700;
   }
 
   .option-summary {
-    color: var(--muted);
-    font-size: 0.92rem;
+    color: var(--haze);
+    font-size: var(--t-sm);
   }
 
   .option-meta {
-    color: var(--faint);
-    font-size: 0.85rem;
+    color: var(--mist);
+    font-size: var(--t-xs);
     overflow-wrap: anywhere;
-  }
-
-  .option-meta code {
-    font-size: 0.82rem;
   }
 
   .hash {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--border-strong);
-    font-size: 0.82rem;
+    gap: var(--s-3);
+    font-size: var(--t-xs);
   }
 
   .hash-label {
     flex: none;
-    color: var(--faint);
+    color: var(--mist);
     font-weight: 700;
-    letter-spacing: 0.04em;
   }
 
   .hash-value {
     flex: 1;
     min-width: 0;
     padding: 0;
-    border: 0;
     background: none;
-    color: var(--muted);
-    font-size: 0.8rem;
-    overflow-wrap: anywhere;
+    color: var(--haze);
     word-break: break-all;
   }
 
   .empty {
     margin: 0;
-    color: var(--muted);
+    color: var(--haze);
+    max-width: 56ch;
   }
 
-  .note {
-    display: flex;
-    gap: 10px;
-    margin: auto 0 0;
-    color: var(--muted);
-    font-size: 0.9rem;
+  .platform :global(.note) {
+    grid-column: 1;
+    align-self: start;
+    margin: 0;
   }
 
-  .note :global(svg) {
-    flex: none;
-    margin-top: 3px;
-    color: var(--info);
+  .platform[data-detected] .head :is(h2, h3) {
+    color: var(--moon);
   }
 
-  .note.warn :global(svg) {
-    color: var(--warn);
-  }
+  @media (max-width: 760px) {
+    .platform {
+      grid-template-columns: minmax(0, 1fr);
+    }
 
-  /* Compact cards (homepage): stacked buttons, no file details. */
-  .compact .option {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 14px;
-  }
+    .options,
+    .empty,
+    .platform :global(.note) {
+      grid-column: 1;
+      grid-row: auto;
+    }
 
-  .compact .option .btn {
-    justify-self: start;
-  }
-
-  @media (max-width: 560px) {
     .option {
       grid-template-columns: minmax(0, 1fr);
     }

@@ -4,152 +4,143 @@ import InlineText from './InlineText.astro';
 import { environments, linuxPackages } from '../data/platforms';
 
 interface Props {
-  /** Show the Linux packaging channels below the table. */
   showPackages?: boolean;
 }
 const { showPackages = true } = Astro.props;
 ---
 
-<div class="compat">
-  <ul class="envs">
-    {
-      environments.map((env) => (
-        <li class={`env env-${env.status}`}>
-          <div class="env-head">
-            <div>
-              <h3>{env.name}</h3>
-              <p class="detail">{env.detail}</p>
-            </div>
-            <StatusBadge status={env.status} />
-          </div>
-          <p class="notes"><InlineText text={env.notes} /></p>
-        </li>
-      ))
-    }
-  </ul>
-
-  {
-    showPackages && (
-      <div class="packages">
-        <h3>Linux packages</h3>
-        <ul>
-          {linuxPackages.map((pkg) => (
-            <li>
-              <span class="pkg-name">{pkg.name}</span>
-              <StatusBadge status={pkg.status} />
-              <span class="pkg-text"><InlineText text={pkg.text} /></span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    )
-  }
+<div class="table-wrap">
+  <table class="compat">
+    <caption class="visually-hidden">Where animaEngine runs</caption>
+    <thead>
+      <tr>
+        <th scope="col">System</th>
+        <th scope="col">Status</th>
+        <th scope="col">What to know</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        environments.map((env) => (
+          <tr>
+            <th scope="row">
+              {env.name}
+              <span class="detail">{env.detail}</span>
+            </th>
+            <td>
+              <StatusBadge status={env.status} />
+            </td>
+            <td class="notes">
+              <InlineText text={env.notes} />
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
 </div>
+
+{
+  showPackages && (
+    <div class="packages">
+      <h3>Ways to install on Linux</h3>
+      <dl>
+        {linuxPackages.map((pkg) => (
+          <div>
+            <dt>
+              {pkg.name} <StatusBadge status={pkg.status} />
+            </dt>
+            <dd>
+              <InlineText text={pkg.text} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
 
 <style>
   .compat {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
+    font-size: var(--t-md);
   }
 
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .compat th[scope='row'] {
+    width: 30%;
+    font-family: var(--display);
+    font-size: var(--t-lg);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
   }
 
-  .envs {
-    display: grid;
-    gap: 12px;
-  }
-
-  .env {
-    padding: 18px 20px;
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--surface);
-  }
-
-  .env-stable {
-    border-left-color: var(--ok);
-  }
-
-  .env-opt-in {
-    border-left-color: var(--info);
-  }
-
-  .env-experimental {
-    border-left-color: var(--warn);
-  }
-
-  .env-planned {
-    border-left-color: var(--accent-strong);
-    border-left-style: dashed;
-  }
-
-  .env-unsupported {
-    border-left-color: var(--no);
-  }
-
-  .env-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 1.08rem;
+  .compat td:nth-child(2) {
+    width: 16%;
+    padding-top: 18px;
   }
 
   .detail {
-    margin: 2px 0 0;
-    color: var(--faint);
-    font-size: 0.9rem;
+    display: block;
+    margin-top: 4px;
+    font-family: var(--text);
+    font-size: var(--t-sm);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--mist);
   }
 
   .notes {
-    margin: 10px 0 0;
-    color: var(--muted);
-    font-size: 0.95rem;
+    color: var(--haze);
+    max-width: 60ch;
   }
 
   .packages {
-    padding: 22px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    background: var(--bg-raised);
+    margin-top: var(--s-8);
   }
 
   .packages h3 {
-    margin-bottom: 12px;
+    margin-bottom: var(--s-4);
   }
 
-  .packages li {
+  dl {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 12px;
-    padding: 12px 0;
-    border-top: 1px solid var(--border);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--s-5) var(--s-6);
+    margin: 0;
   }
 
-  .pkg-name {
+  dt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    margin-bottom: 6px;
     font-weight: 700;
   }
 
-  .pkg-text {
-    grid-column: 1 / -1;
-    color: var(--muted);
-    font-size: 0.9rem;
+  dd {
+    margin: 0;
+    color: var(--haze);
+    font-size: var(--t-sm);
   }
 
-  @media (max-width: 900px) {
-    .compat {
-      grid-template-columns: minmax(0, 1fr);
+  @media (max-width: 720px) {
+    .compat thead {
+      display: none;
+    }
+
+    .compat tr {
+      display: grid;
+      gap: 6px;
+      padding: var(--s-4) 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .compat th[scope='row'],
+    .compat td {
+      width: auto;
+      padding: 0;
+      border: 0;
     }
   }
 </style>

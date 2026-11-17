@@ -1,66 +1,58 @@
 ---
-import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
-import { characterByName } from '../data/media';
+import Stage from '../components/Stage.astro';
+import type { CastMember } from '../data/stage';
 
-const ghost = characterByName('ghost');
+const cast: CastMember[] = [
+  { name: 'ghost', kind: 'floater', wideOnly: true },
+  { name: 'cat', kind: 'walker' },
+];
 ---
 
-<BaseLayout title="Page not found" description="This page does not exist on animaengine.eu. Find animaEngine downloads, documentation and release notes from the home page." noindex>
-  <section class="not-found">
-    <div class="container">
-      <Image src={ghost.still} width={160} height={160} widths={[160, 320]} sizes="160px" format="webp" alt="" loading="eager" />
-      <p class="eyebrow">404</p>
-      <h1>This page wandered off</h1>
-      <p class="lead">The address may be mistyped, or the page has moved. These might help:</p>
-      <div class="btn-row">
-        <a class="btn btn-primary" href="/">Home</a>
-        <a class="btn" href="/download/">Download</a>
-        <a class="btn" href="/docs/">Documentation</a>
+<BaseLayout
+  title="Page not found"
+  description="This page does not exist on animaengine.eu. Find animaEngine downloads, documentation and release notes from the home page."
+  noindex
+>
+  <Stage class="lost" cast={cast} skyTop={24} size={{ wide: 80, narrow: 64 }}>
+    <div class="container lost-inner">
+      <div class="lost-copy" data-stage-avoid>
+        <h1>This page wandered off</h1>
+        <p class="lead">The address may be mistyped, or the page has moved.</p>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="/">Home</a>
+          <a class="btn" href="/download/">Download</a>
+          <a class="btn" href="/docs/">Documentation</a>
+        </div>
+        <p class="small muted">Looking for an older version? The <a href="/changelog/">changelog</a> lists every release.</p>
       </div>
-      <p class="small muted">
-        <Icon name="info" size={16} class="inline-icon" /> Looking for an older version? See the <a href="/changelog/">changelog</a>.
-      </p>
     </div>
-  </section>
+  </Stage>
 </BaseLayout>
 
 <style>
-  .not-found {
-    padding-block: clamp(64px, 10vw, 140px);
-    text-align: center;
+  :global(.stage.lost) {
+    min-height: clamp(560px, calc(100svh - var(--header-h)), 820px);
   }
 
-  .not-found :global(img) {
-    margin: 0 auto 16px;
-    filter: drop-shadow(0 18px 30px rgb(0 0 0 / 0.4));
+  .lost-inner {
+    flex: 1;
+    padding-block: clamp(40px, 8vh, 104px) calc(clamp(160px, 24vh, 260px) + 16px);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .not-found :global(img) {
-      animation: float 4s ease-in-out infinite;
-    }
+  .lost-copy {
+    max-width: 34rem;
   }
 
-  @keyframes float {
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  .lead {
-    max-width: 40ch;
-    margin-inline: auto;
+  .lost-copy h1 {
+    font-size: clamp(2.6rem, 1.2rem + 4.4vw, 4.9rem);
+    font-weight: 720;
+    letter-spacing: -0.028em;
+    line-height: 1;
+    margin-bottom: var(--s-5);
   }
 
   .btn-row {
-    justify-content: center;
-    margin: 28px 0;
-  }
-
-  .small :global(.inline-icon) {
-    display: inline-block;
-    vertical-align: -3px;
+    margin: var(--s-6) 0 var(--s-5);
   }
 </style>

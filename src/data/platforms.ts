@@ -31,14 +31,14 @@ export interface PlatformRow {
 export const environments: PlatformRow[] = [
   {
     id: 'linux-x11',
-    name: 'Linux · X11',
+    name: 'Linux on X11',
     detail: 'Any desktop on an X server',
     status: 'stable',
     notes: 'The default backend. Every feature works here, including following the cursor outside edit mode.',
   },
   {
     id: 'linux-gnome-kde-wayland',
-    name: 'Linux · GNOME and KDE on Wayland',
+    name: 'GNOME and KDE on Wayland',
     detail: 'Runs through XWayland, automatically',
     status: 'stable',
     notes:
@@ -46,7 +46,7 @@ export const environments: PlatformRow[] = [
   },
   {
     id: 'linux-wlroots',
-    name: 'Linux · native Wayland',
+    name: 'Native Wayland',
     detail: 'sway, Hyprland, river, Wayfire (wlroots)',
     status: 'opt-in',
     notes:
@@ -54,8 +54,8 @@ export const environments: PlatformRow[] = [
   },
   {
     id: 'windows',
-    name: 'Windows · x86_64',
-    detail: 'Installer or portable ZIP, new in 1.5',
+    name: 'Windows',
+    detail: 'x86_64, installer or portable ZIP, new in 1.5',
     status: 'experimental',
     notes:
       'Built and tested under Wine so far, not yet on a real Windows machine. The files are not signed yet, so SmartScreen asks before running them. Reports are very welcome.',

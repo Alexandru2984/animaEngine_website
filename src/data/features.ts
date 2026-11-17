@@ -3,14 +3,14 @@
  * (site-assets/press/texts/en.md) and docs/release-notes/v1.5.0.md / v1.5.1.md.
  * Only shipped, documented behaviour belongs here.
  */
-import type { CharacterName } from './media';
+import type { Clip } from './media';
 
 export interface FeatureGroup {
   id: string;
   title: string;
   summary: string;
-  /** A built-in character that stands next to the group on the homepage. */
-  mascot: CharacterName;
+  /** The recording that shows this group on the homepage. */
+  clip: Clip['id'];
   points: string[];
 }
 
@@ -19,7 +19,7 @@ export const featureGroups: FeatureGroup[] = [
     id: 'pictures',
     title: 'Any picture comes alive',
     summary: 'Drop a PNG, GIF, WebP or a short MP4 on the screen, or paste a picture: it becomes a character.',
-    mascot: 'ghost',
+    clip: 'pickup',
     points: [
       'PNG, animated PNG, GIF, WebP, JPEG and H.264 MP4, with per-frame delays kept',
       'Sprite sheets sliced by grid, and folders of numbered PNG frames',
@@ -31,7 +31,7 @@ export const featureGroups: FeatureGroup[] = [
     id: 'life',
     title: 'A life of their own',
     summary: 'Walking, wandering, bouncing, following the cursor or each other, playing tag — or a small script you write.',
-    mascot: 'cat',
+    clip: 'tap',
     points: [
       'Tap one, even outside edit mode: it hops, says a line and plays its sound',
       'Characters greet each other, bump into each other and land on each other’s heads',
@@ -43,7 +43,7 @@ export const featureGroups: FeatureGroup[] = [
     id: 'out-of-the-way',
     title: 'Out of your way',
     summary: 'Clicks pass through. They step aside for full-screen games and films, and hold still while you are away.',
-    mascot: 'cloud',
+    clip: 'desktop',
     points: [
       'Click-through by default: only the ⚙ button catches input, and it can be hidden',
       'Over your windows, or — one switch — on the desktop beneath them',
@@ -55,7 +55,7 @@ export const featureGroups: FeatureGroup[] = [
     id: 'your-day',
     title: 'Around your day',
     summary: 'Reminders to take a break or drink water, a focus timer, bedtime, and a welcome back when you return.',
-    mascot: 'star',
+    clip: 'sleep',
     points: [
       'Reminders at intervals or at a set time, said in a speech bubble',
       'Optional desktop notifications with a sound',
@@ -68,24 +68,20 @@ export const featureGroups: FeatureGroup[] = [
 export interface FeatureFact {
   title: string;
   text: string;
-  icon: 'scenes' | 'people' | 'lock';
 }
 
 export const featureFacts: FeatureFact[] = [
   {
     title: 'Scenes to share',
     text: 'Save what is on screen under a name, switch by the time of day, and share a scene or a character as one file.',
-    icon: 'scenes',
   },
   {
     title: 'For everyone',
     text: 'Ten languages, screen readers over AT-SPI, every action from the keyboard, and high-contrast themes.',
-    icon: 'people',
   },
   {
     title: 'Private by design',
     text: 'The app makes no network connection at all. Nothing about you or your desktop leaves your computer.',
-    icon: 'lock',
   },
 ];
 

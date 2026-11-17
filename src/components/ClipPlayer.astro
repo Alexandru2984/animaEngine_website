@@ -65,10 +65,12 @@ const descId = `${idPrefix}-${clip.id}-desc`;
   .frame {
     position: relative;
     aspect-ratio: 16 / 9;
-    border-radius: var(--radius);
+    border-radius: var(--r-media);
     overflow: hidden;
-    background: #241c3f;
-    border: 1px solid var(--border-strong);
+    background: var(--hill-near);
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 24px 48px -28px rgb(0 0 0 / 0.85);
   }
 
   video {
@@ -85,19 +87,16 @@ const descId = `${idPrefix}-${clip.id}-desc`;
     place-items: center;
     width: 44px;
     height: 44px;
-    border-radius: 999px;
-    border: 1px solid rgb(255 255 255 / 0.22);
-    background: rgb(16 14 23 / 0.72);
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    background: rgb(21 16 42 / 0.72);
     color: #fff;
     cursor: pointer;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    transition: background-color 140ms, transform 140ms;
+    transition: background-color var(--dur-quick) var(--ease-out);
   }
 
   .toggle:hover {
-    background: rgb(16 14 23 / 0.92);
-    transform: scale(1.05);
+    background: rgb(21 16 42 / 0.95);
   }
 
   .toggle[data-state='paused'] .when-playing,
@@ -106,13 +105,13 @@ const descId = `${idPrefix}-${clip.id}-desc`;
   }
 
   figcaption {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 0.95rem;
+    margin-top: var(--s-3);
+    color: var(--mist);
+    font-size: var(--t-sm);
   }
 
   figcaption strong {
-    color: var(--text);
+    color: var(--haze);
     font-weight: 700;
   }
 </style>

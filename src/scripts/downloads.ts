@@ -52,7 +52,7 @@ function renderDownload(
   setText(node, 'title', option.label);
   setText(node, 'summary', option.summary);
   setText(node, 'file', option.fileName);
-  setText(node, 'meta', `· ${ARCH_LABELS[option.arch]}`);
+  setText(node, 'meta', `, ${ARCH_LABELS[option.arch]}`);
   setText(node, 'button', `Download ${option.label}`);
   setText(node, 'size', formatBytes(option.size));
   const anchor = slot(node, 'link') as HTMLAnchorElement | null;

@@ -37,7 +37,7 @@ const filled = option !== undefined;
         <h3 class="rec-title" data-slot="title">{option?.label}</h3>
         <p class="rec-summary" data-slot="summary">{option?.summary}</p>
         <p class="rec-file">
-          <code data-slot="file">{option?.fileName}</code> <span data-slot="meta">{option && `· ${ARCH_LABELS[option.arch]}`}</span>
+          <code data-slot="file">{option?.fileName}</code><span data-slot="meta">{option && `, ${ARCH_LABELS[option.arch]}`}</span>
         </p>
       </div>
       <div class="rec-action">
@@ -89,11 +89,9 @@ const filled = option !== undefined;
   .rec {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 16px 24px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-raised);
+    gap: var(--s-4) var(--s-5);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
   }
 
   .rec-message {
@@ -102,25 +100,27 @@ const filled = option !== undefined;
 
   .rec-kicker {
     margin: 0 0 4px;
-    color: var(--accent-strong);
-    font-size: 0.85rem;
+    color: var(--star);
+    font-size: var(--t-sm);
     font-weight: 700;
   }
 
   .rec-title {
     margin: 0 0 4px;
-    font-size: 1.35rem;
-    font-weight: 750;
+    font-family: var(--display);
+    font-size: var(--t-2xl);
+    font-weight: 760;
+    letter-spacing: -0.02em;
   }
 
   .rec-summary {
     margin: 0 0 8px;
-    color: var(--muted);
+    color: var(--haze);
   }
 
   .rec-file {
     margin: 0;
-    color: var(--faint);
+    color: var(--mist);
     font-size: 0.88rem;
     overflow-wrap: anywhere;
   }
@@ -134,7 +134,7 @@ const filled = option !== undefined;
 
   .rec-size {
     margin: 0;
-    color: var(--faint);
+    color: var(--mist);
     font-size: 0.85rem;
   }
 
@@ -150,13 +150,13 @@ const filled = option !== undefined;
     align-items: center;
     gap: 10px;
     padding-top: 14px;
-    border-top: 1px dashed var(--border-strong);
+    border-top: 1px dashed var(--line);
     font-size: 0.82rem;
   }
 
   .rec-hash-label {
     flex: none;
-    color: var(--faint);
+    color: var(--mist);
     font-weight: 700;
   }
 
@@ -166,7 +166,7 @@ const filled = option !== undefined;
     padding: 0;
     border: 0;
     background: none;
-    color: var(--muted);
+    color: var(--haze);
     word-break: break-all;
   }
 
@@ -177,10 +177,10 @@ const filled = option !== undefined;
     flex: none;
     min-height: 32px;
     padding: 4px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: var(--r-control);
+    background: var(--night);
+    color: var(--haze);
     font: inherit;
     font-size: 0.8rem;
     font-weight: 700;
@@ -188,30 +188,30 @@ const filled = option !== undefined;
   }
 
   .copy:hover {
-    color: var(--text);
-    border-color: var(--accent);
+    color: var(--moon);
+    border-color: var(--violet);
   }
 
   .copy[data-copied] {
-    color: var(--ok);
-    border-color: var(--ok);
+    color: var(--stable);
+    border-color: var(--stable);
   }
 
   .rec-note {
     display: flex;
     gap: 10px;
-    color: var(--muted);
+    color: var(--haze);
     font-size: 0.92rem;
   }
 
   .rec-note :global(svg) {
     flex: none;
     margin-top: 3px;
-    color: var(--warn);
+    color: var(--star);
   }
 
   .rec-alt {
-    color: var(--muted);
+    color: var(--haze);
     font-size: 0.92rem;
   }
 

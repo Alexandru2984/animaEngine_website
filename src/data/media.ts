@@ -166,13 +166,8 @@ export const CHARACTER_STATES = [
 ] as const;
 export type CharacterState = (typeof CHARACTER_STATES)[number]['id'];
 
-// Only these file patterns are bundled; the sprite sheets and group pictures
-// in site-assets/characters stay out of the build unless imported above.
-const animated = import.meta.glob<string>('../../site-assets/characters/*-{idle,walk,drag,fall}.webp', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+// Only these file patterns are bundled. Sprite sheets are loaded by
+// src/data/stage.ts; the animated WebPs and group pictures are not used.
 const sleeping = import.meta.glob<{ default: ImageMetadata }>('../../site-assets/characters/*-sleep.png', {
   eager: true,
 });
@@ -193,8 +188,6 @@ export interface Character {
   still: ImageMetadata;
   /** Asleep (512×512 PNG, resized at build time). */
   asleep: ImageMetadata;
-  /** URL of the 256×256 animated WebP for each moving state. */
-  states: Record<Exclude<CharacterState, 'sleep'>, string>;
 }
 
 export const characters: Character[] = CHARACTER_NAMES.map((name) => {
@@ -204,12 +197,6 @@ export const characters: Character[] = CHARACTER_NAMES.map((name) => {
     label: name.charAt(0).toUpperCase() + name.slice(1),
     still: required(stills[`${base}${name}.png`], `${name}.png`).default,
     asleep: required(sleeping[`${base}${name}-sleep.png`], `${name}-sleep.png`).default,
-    states: {
-      idle: required(animated[`${base}${name}-idle.webp`], `${name}-idle.webp`),
-      walk: required(animated[`${base}${name}-walk.webp`], `${name}-walk.webp`),
-      drag: required(animated[`${base}${name}-drag.webp`], `${name}-drag.webp`),
-      fall: required(animated[`${base}${name}-fall.webp`], `${name}-fall.webp`),
-    },
   };
 });
 

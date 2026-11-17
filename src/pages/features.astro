@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
 import InlineText from '../components/InlineText.astro';
 import { featureSections, supportedAssets } from '../data/features';
@@ -11,21 +12,15 @@ import { breadcrumbs } from '../lib/structured-data';
   description="Everything animaEngine does: characters from any picture or short video, behaviours and scripts, edit mode, scenes, reminders, desktop integration, accessibility and privacy."
   jsonLd={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Features', path: '/features/' }])]}
 >
-  <section class="page-hero">
-    <div class="container">
-      <p class="eyebrow">Features</p>
-      <h1>Everything it does, in one place</h1>
-      <p class="lead">
-        Every item on this page is in animaEngine today. Most of the livelier parts are off until you turn them on.
-      </p>
-      <nav class="toc" aria-label="On this page">
-        <ul>
-          {featureSections.map((s) => <li><a href={`#${s.id}`}>{s.title}</a></li>)}
-          <li><a href="#formats">Supported files</a></li>
-        </ul>
-      </nav>
-    </div>
-  </section>
+  <PageHeader title="Everything it does, in one place">
+    <p>Every item on this page is in animaEngine today. Most of the livelier parts are off until you turn them on.</p>
+  </PageHeader>
+  <nav class="container toc" aria-label="On this page">
+    <ul>
+      {featureSections.map((s) => <li><a href={`#${s.id}`}>{s.title}</a></li>)}
+      <li><a href="#formats">Supported files</a></li>
+    </ul>
+  </nav>
 
   <div class="container sections">
     {
@@ -38,10 +33,7 @@ import { breadcrumbs } from '../lib/structured-data';
           <dl class="items">
             {section.items.map((item) => (
               <div class="item">
-                <dt>
-                  <Icon name="check" size={18} />
-                  {item.title}
-                </dt>
+                <dt>{item.title}</dt>
                 <dd>
                   <InlineText text={item.text} />
                 </dd>
@@ -77,14 +69,12 @@ import { breadcrumbs } from '../lib/structured-data';
       </div>
     </section>
 
-    <aside class="next panel">
-      <div>
-        <h2>See it, then try it</h2>
-        <p class="muted">Recordings of the real app, or the download for your system.</p>
-      </div>
+    <aside class="next">
+      <h2>See it, then try it</h2>
+      <p class="muted">Recordings of the real app, or the download for your system.</p>
       <div class="btn-row">
-        <a class="btn" href="/showcase/">Showcase</a>
         <a class="btn btn-primary" href="/download/"><Icon name="download" /> Download</a>
+        <a class="btn" href="/showcase/">Showcase</a>
       </div>
     </aside>
   </div>
@@ -95,100 +85,80 @@ import { breadcrumbs } from '../lib/structured-data';
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 28px 0 0;
-    padding: 0;
+    gap: var(--s-2) var(--s-5);
+    margin: 0;
+    padding: var(--s-5) 0 0;
   }
 
   .toc a {
-    display: inline-block;
-    padding: 6px 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 0.9rem;
-    font-weight: 650;
+    color: var(--haze);
+    font-weight: 700;
     text-decoration: none;
   }
 
   .toc a:hover {
-    color: var(--text);
-    border-color: var(--accent);
+    color: var(--moon);
+    text-decoration: underline;
   }
 
   .sections {
-    padding-bottom: clamp(64px, 9vw, 120px);
+    padding-bottom: clamp(72px, 10vw, 136px);
   }
 
   .feature-section {
     display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 2fr);
-    gap: 24px 48px;
-    padding-block: 48px;
-    border-top: 1px solid var(--border);
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--s-5) clamp(32px, 6vw, 96px);
+    padding-block: var(--s-8);
+    border-top: 1px solid var(--line);
   }
 
-  .feature-section header h2 {
-    font-size: 1.6rem;
+  .feature-section:first-of-type {
+    margin-top: var(--s-7);
   }
 
   .feature-section header {
     align-self: start;
     position: sticky;
-    top: calc(var(--header-h) + 24px);
+    top: calc(var(--header-h) + var(--s-5));
+  }
+
+  .feature-section header h2 {
+    font-size: var(--t-2xl);
   }
 
   .items {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: var(--s-6) var(--s-6);
     margin: 0;
   }
 
-  .item {
-    padding: 18px 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-  }
-
   dt {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-    font-weight: 750;
-  }
-
-  dt :global(svg) {
-    color: var(--ok);
-    flex: none;
+    margin-bottom: var(--s-2);
+    font-family: var(--display);
+    font-size: var(--t-lg);
+    font-weight: 760;
+    letter-spacing: -0.01em;
   }
 
   dd {
     margin: 0;
-    color: var(--muted);
-    font-size: 0.95rem;
+    color: var(--haze);
   }
 
   .next {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-top: 24px;
-    padding: 28px;
+    margin-top: var(--s-7);
+    padding-top: var(--s-7);
+    border-top: 1px solid var(--line);
   }
 
   .next h2 {
-    font-size: 1.4rem;
-    margin-bottom: 4px;
+    margin-bottom: var(--s-2);
   }
 
-  .next p {
-    margin: 0;
+  .next .btn-row {
+    margin-top: var(--s-5);
   }
 
   @media (max-width: 900px) {

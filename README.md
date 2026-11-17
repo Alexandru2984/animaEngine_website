@@ -116,21 +116,37 @@ tests/                  Vitest unit tests
 
 Key decisions:
 
-- **Static first.** Every page is prerendered. The browser downloads about 15 KB of
-  JavaScript in total, split per page; nothing is hydrated by a framework.
+- **Static first.** Every page is prerendered. All the site's JavaScript together is
+  about 25 KB, split per page; nothing is hydrated by a framework.
 - **Progressive enhancement.** Without JavaScript every page works: clips have native
   controls, the clip list uses links and CSS `:target`, the download page lists every
   file with direct links, and the mobile menu is a native `popover`. Scripts add OS
-  detection, the play/pause buttons, tabs, the lightbox and the character explorer.
+  detection, the characters, the play/pause buttons, tabs, the lightbox and the model
+  sheet.
 - **Content separate from presentation.** Product facts live in `src/data/*.ts` and
   Markdown in `src/content/`; components only render them.
 - **No inline code.** Astro is configured to emit every script and stylesheet as a
   hashed file, Markdown code is highlighted with Prism (classes, not inline styles),
   and data for scripts is passed in non-executed `<script type="application/json">`
   blocks. This keeps the CSP at `script-src 'self'; style-src 'self'`.
-- **Dark only,** using the dark palette from `site-assets/press/colours.json`.
-  The typeface is Manrope (variable, self-hosted from `@fontsource-variable/manrope`;
-  the Latin subset is 25 KB and preloaded).
+- **The dusk desktop.** The design (colours sampled from the app's own wallpaper,
+  Bricolage Grotesque and Atkinson Hyperlegible Next, self-hosted) and the character
+  animation system are documented in [DESIGN.md](DESIGN.md).
+
+### The characters
+
+The homepage hero, the edge of the download section and the 404 page are small scenes in
+which animaEngine's built-in characters live, drawn from the app's own sprite sheets:
+
+- `src/components/Stage.astro` renders the sky and hills and passes the cast to
+  `src/scripts/stage.ts`, which moves DOM sprites with one `requestAnimationFrame` loop
+  per stage (stopped off screen, in background tabs and while everyone sleeps).
+- `src/lib/stage/actor.ts` is the behaviour (fall, land, idle, walk, hop, drift, sleep)
+  and `src/lib/stage/hills.ts` the ground; both are pure and unit-tested.
+- `src/data/stage.ts` re-encodes the sheets as WebP at build time and holds the lines the
+  characters say when clicked.
+- To change who appears where, edit the `cast` arrays in `src/pages/index.astro` and
+  `src/pages/404.astro`.
 
 ### Why there is a Worker
 
@@ -425,23 +441,26 @@ npm run validate
 
 ## Performance
 
-- Static HTML, about 15 KB of JavaScript in total, CSS split per page.
+- Static HTML, about 25 KB of JavaScript in total (per page less), CSS split per page.
 - Images: AVIF/WebP with `srcset`, explicit dimensions, lazy loading below the fold.
-- The hero poster and the Latin font file are preloaded.
+- The two Latin font files are preloaded (77 KB + 34 KB); the showcase preloads its first
+  clip poster.
 - Clips are not downloaded until they are about to play: `preload="none"`, played only
   while at least half visible, paused off screen and in background tabs, never
-  auto-played under `prefers-reduced-motion`. The hero clip is 86 KB.
-- Character animations (animated WebP) load only when chosen in the explorer.
+  auto-played under `prefers-reduced-motion`.
+- Character sprite sheets (~27 KB each as WebP) load after the page's `load` event: the
+  hero needs four to seven depending on screen size, the model sheet loads one sheet at a
+  time as it is chosen.
 - Caching: `/_astro/*` (content-hashed) `max-age=31536000, immutable`; icons and the OG
   image one day; HTML, `sitemap.xml` and `robots.txt` revalidate on every request.
-- CSS animations are limited to the walking cat in the hero and a few transitions; all
-  stop under `prefers-reduced-motion`.
+- The character loop runs only while its scene is visible and someone is awake; under
+  `prefers-reduced-motion` the characters stand still.
 
 ## Accessibility
 
 Semantic landmarks and one `<h1>` per page, a skip link, visible focus rings, keyboard
 operation everywhere (ARIA tabs with arrow keys, native `<dialog>` lightbox and `popover`
-menu with Escape, radio groups in the character explorer), text alternatives for every
+menu with Escape, buttons in the model sheet), text alternatives for every
 clip and screenshot, colour contrast of at least 4.5:1, touch targets of at least 24 px
 (most controls 40–48 px), and
 `prefers-reduced-motion` support. WCAG 2.2 AA is the target.
@@ -456,5 +475,7 @@ clip and screenshot, colour contrast of at least 4.5:1, touch targets of at leas
   languages; only the English Open Graph image is used.
 - Without JavaScript the clip list highlights the first clip even when the URL selects
   another one.
+- The characters are decoration: they are hidden from assistive technology and only
+  react to a pointer, not the keyboard.
 - Range support for video is provided by the Worker until Cloudflare's asset layer
   supports it natively.

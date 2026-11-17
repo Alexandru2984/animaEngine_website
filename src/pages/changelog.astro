@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
 import { getManifest } from '../lib/releases';
 import { buildDownloads, PLATFORM_OSES, pickLatestStable } from '../lib/downloads';
@@ -31,17 +32,12 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
   description="Release notes for every published animaEngine version, newest first, with links to each release's files on GitHub."
   jsonLd={[breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Changelog', path: '/changelog/' }])]}
 >
-  <section class="page-hero">
-    <div class="container">
-      <p class="eyebrow">Changelog</p>
-      <h1>What changed, release by release</h1>
-      <p class="lead">
-        The notes published with each GitHub release, newest first. The complete history, including smaller versions
-        that were tagged without a release page, is in
-        <a href={links.changelogFile} rel="noopener noreferrer">CHANGELOG.md</a>.
-      </p>
-    </div>
-  </section>
+  <PageHeader title="What changed, release by release">
+    <p>
+      The notes published with each GitHub release, newest first. The complete history, including smaller versions that
+      were tagged without a release page, is in <a href={links.changelogFile} rel="noopener noreferrer">CHANGELOG.md</a>.
+    </p>
+  </PageHeader>
 
   <div class="container layout">
     <nav class="versions" aria-label="Versions">
@@ -68,8 +64,8 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
                 <h2 id={`${entry.data.tag}-title`}>{entry.data.title}</h2>
                 <p class="meta">
                   <time datetime={isoDay(entry.data.publishedAt)}>{formatDate(entry.data.publishedAt)}</time>
-                  {latest && latest.tag === entry.data.tag && <span class="badge badge-stable">Latest</span>}
-                  {entry.data.prerelease && <span class="badge badge-experimental">Pre-release</span>}
+                  {latest && latest.tag === entry.data.tag && <span class="status status-stable">Latest</span>}
+                  {entry.data.prerelease && <span class="status status-experimental">Pre-release</span>}
                 </p>
               </div>
               <a class="btn btn-small" href={entry.data.url} rel="noopener noreferrer">
@@ -93,7 +89,7 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
                         {f.fileName}
                       </a>
                       <span class="muted">
-                        {OS_SHORT[f.os]} · {f.label} · {formatBytes(f.size)}
+                        {OS_SHORT[f.os]}, {f.label}, {formatBytes(f.size)}
                       </span>
                     </li>
                   ))}
@@ -146,8 +142,8 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
   .layout {
     display: grid;
     grid-template-columns: 180px minmax(0, 1fr);
-    gap: 48px;
-    padding-bottom: clamp(64px, 9vw, 120px);
+    gap: var(--s-7);
+    padding-block: var(--s-7) clamp(72px, 10vw, 136px);
   }
 
   .versions ul {
@@ -156,7 +152,7 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
     list-style: none;
     margin: 0;
     padding: 0;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid var(--line-soft);
   }
 
   .versions a {
@@ -166,20 +162,20 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
     margin-left: -1px;
     padding: 5px 14px;
     border-left: 2px solid transparent;
-    color: var(--muted);
+    color: var(--haze);
     font-family: var(--mono);
     font-size: 0.9rem;
     text-decoration: none;
   }
 
   .versions a:hover {
-    border-left-color: var(--accent);
-    color: var(--text);
+    border-left-color: var(--violet);
+    color: var(--moon);
   }
 
   .pre {
-    color: var(--faint);
-    font-family: var(--font);
+    color: var(--mist);
+    font-family: var(--text);
     font-size: 0.72rem;
   }
 
@@ -191,10 +187,8 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
   }
 
   .release {
-    padding: clamp(20px, 3vw, 32px);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    background: var(--surface);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--line);
   }
 
   .release-head {
@@ -203,14 +197,12 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px 24px;
-    padding-bottom: 16px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--s-5);
   }
 
   .release-head h2 {
     margin: 0 0 6px;
-    font-size: 1.5rem;
+    font-size: var(--t-2xl);
   }
 
   .meta {
@@ -219,7 +211,7 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
     align-items: center;
     gap: 10px;
     margin: 0;
-    color: var(--muted);
+    color: var(--haze);
   }
 
   .notes {
@@ -231,18 +223,18 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
   }
 
   .notes :global(pre) {
-    background: var(--bg);
+    background: var(--night);
   }
 
   .files {
     margin-top: 20px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line-soft);
     padding-top: 14px;
   }
 
   .files summary {
     cursor: pointer;
-    color: var(--accent-strong);
+    color: var(--violet);
     font-weight: 700;
   }
 
@@ -269,8 +261,8 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
 
   .tags {
     padding: 24px;
-    border: 1px dashed var(--border-strong);
-    border-radius: var(--radius-l);
+    border: 1px dashed var(--line);
+    border-radius: var(--r-media);
   }
 
   .tags h2 {
@@ -289,7 +281,7 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
   .tags a {
     display: inline-block;
     padding: 4px 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line-soft);
     border-radius: 999px;
     font-family: var(--mono);
     font-size: 0.88rem;
@@ -317,7 +309,7 @@ const OS_SHORT = { linux: 'Linux', windows: 'Windows', macos: 'macOS', android: 
     .versions a {
       margin: 0;
       padding: 4px 12px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--line-soft);
       border-radius: 999px;
     }
   }

@@ -1,36 +1,46 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ClipPlayer from '../components/ClipPlayer.astro';
-import ClipShowcase from '../components/ClipShowcase.astro';
-import HeroWalker from '../components/HeroWalker.astro';
-import FeatureGroups from '../components/FeatureGroups.astro';
+import Stage from '../components/Stage.astro';
+import FeatureActs from '../components/FeatureActs.astro';
+import ModelSheet from '../components/ModelSheet.astro';
 import CompatibilityTable from '../components/CompatibilityTable.astro';
 import ArchitectureSection from '../components/ArchitectureSection.astro';
 import PlatformDownloads from '../components/PlatformDownloads.astro';
-import SectionHeader from '../components/SectionHeader.astro';
 import Icon from '../components/Icon.astro';
-import { clips } from '../data/media';
 import { links, site } from '../data/site';
 import { getDownloadContext } from '../lib/site-downloads';
 import { PLATFORM_OSES } from '../lib/downloads';
 import { formatDate, isoDay } from '../lib/format';
 import { softwareApplication } from '../lib/structured-data';
-import { clipPoster } from '../lib/posters';
+import type { CastMember } from '../data/stage';
 
 const ctx = getDownloadContext();
-const heroClip = clips.find((c) => c.id === 'desktop')!;
-const heroPoster = await clipPoster(heroClip);
+const version = ctx.latest?.version;
+
+const heroCast: CastMember[] = [
+  { name: 'cat', kind: 'walker' },
+  { name: 'frog', kind: 'walker' },
+  { name: 'bunny', kind: 'walker', wideOnly: true },
+  { name: 'slime', kind: 'walker' },
+  { name: 'ghost', kind: 'floater', wideOnly: true },
+  { name: 'star', kind: 'floater', wideOnly: true },
+  { name: 'heart', kind: 'floater', wideOnly: true },
+];
+const ledgeCast: CastMember[] = [
+  { name: 'robot', kind: 'walker' },
+  { name: 'mushroom', kind: 'walker', wideOnly: true },
+  { name: 'cloud', kind: 'walker' },
+];
 ---
 
-<BaseLayout description={site.description} jsonLd={[softwareApplication(ctx.latest)]} preloadImage={heroPoster.src}>
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <p class="eyebrow">Open source · Native, written in Rust</p>
-        <h1 id="hero-title">Animated characters that live on your desktop</h1>
-        <p class="lead">
-          animaEngine draws characters in a transparent overlay above your windows. They walk, bounce, follow each other and
-          play tag — and every click passes straight through to your work.
+<BaseLayout description={site.description} jsonLd={[softwareApplication(ctx.latest)]}>
+  <Stage class="hero" cast={heroCast} skyTop={24}>
+    <div class="container hero-inner">
+      <div class="hero-copy" data-stage-avoid>
+        <h1>Animated characters that live on your desktop</h1>
+        <p class="hero-lead">
+          They walk, bounce and doze over your windows, and every click goes straight through to your work. A native app,
+          written in Rust, free and open source.
         </p>
         <div class="btn-row">
           <a class="btn btn-primary" href="/download/" data-os-cta>
@@ -39,214 +49,238 @@ const heroPoster = await clipPoster(heroClip);
           </a>
           <a class="btn" href={links.repo} rel="noopener noreferrer">
             <Icon name="github" />
-            <span>View on GitHub</span>
+            <span>Source on GitHub</span>
           </a>
         </div>
         <p class="hero-meta">
-          {ctx.latest && <span>Version {ctx.latest.version}</span>}
-          <span>Linux · Windows (experimental)</span>
-          <span>MIT licence</span>
-          <span>No network connections</span>
+          {version ? `Version ${version} for Linux. Windows is new and experimental.` : 'For Linux. Windows is new and experimental.'}
         </p>
         <p class="hero-note" data-os-cta-note hidden></p>
       </div>
-      <div class="hero-media">
-        <div class="glow" aria-hidden="true"></div>
-        <ClipPlayer clip={heroClip} autoplay idPrefix="hero" showCaption={false} />
-        <p class="media-note">A recording of animaEngine on the project’s test rig: the built-in characters walking and floating.</p>
+    </div>
+    <p class="stage-hint container">
+      <span data-stage-avoid>These are animaEngine's own characters. Click one.</span>
+    </p>
+  </Stage>
+
+  <section class="section acts-section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-intro">
+        <h2 id="features-title">What they get up to</h2>
+        <p>Recordings of the real app. Most of the livelier parts are off until you turn them on.</p>
       </div>
-    </div>
-    <HeroWalker />
-  </section>
-
-  <section class="section" id="features" aria-labelledby="features-title">
-    <div class="container">
-      <SectionHeader id="features-title" eyebrow="What it does" title="A small world on top of your work">
-        Bring your own pictures or use the ten built-in characters. Give them as much life as you like, and they stay out
-        of your way.
-      </SectionHeader>
-      <FeatureGroups />
-      <p class="more"><a class="link-arrow" href="/features/">Every feature in detail <Icon name="arrow-right" /></a></p>
+      <FeatureActs />
+      <p class="more"><a href="/features/">Every feature, in detail</a></p>
     </div>
   </section>
 
-  <section class="section section-alt" id="showcase" aria-labelledby="showcase-title">
+  <section class="section roster" id="characters" aria-labelledby="characters-title">
     <div class="container">
-      <SectionHeader id="showcase-title" eyebrow="Showcase" title="See it move">
-        Short, silent recordings of the real app. Pick one to watch.
-      </SectionHeader>
-      <ClipShowcase idPrefix="home" />
-      <p class="more"><a class="link-arrow" href="/showcase/">Screenshots and all ten characters <Icon name="arrow-right" /></a></p>
+      <div class="section-intro">
+        <h2 id="characters-title">Ten characters come with it</h2>
+        <p>
+          Each has its own drawings for standing, walking, being picked up, falling and sleeping. These are the sheets the app
+          plays. Or drop in a picture of your own.
+        </p>
+      </div>
+      <ModelSheet />
     </div>
   </section>
 
   <section class="section" id="compatibility" aria-labelledby="compat-title">
     <div class="container">
-      <SectionHeader id="compat-title" eyebrow="Compatibility" title="Where it runs">
-        Linux first. Each status below is what the project itself reports for release {ctx.latest?.version ?? '1.5.1'}.
-      </SectionHeader>
+      <div class="section-intro">
+        <h2 id="compat-title">Where it runs</h2>
+        <p>Linux first. Each status is what the project itself says about release {version ?? 'its latest release'}.</p>
+      </div>
       <CompatibilityTable />
-      <p class="more"><a class="link-arrow" href="/docs/linux-desktops/">X11, Wayland and the known limitations <Icon name="arrow-right" /></a></p>
+      <p class="more"><a href="/docs/linux-desktops/">X11, Wayland and the known limitations</a></p>
     </div>
   </section>
 
-  <section class="section section-alt" id="architecture" aria-labelledby="arch-title">
+  <section class="section how" id="architecture" aria-labelledby="arch-title">
     <div class="container">
-      <SectionHeader id="arch-title" eyebrow="Under the hood" title="Native, light, and quiet when idle">
-        A desktop companion runs from login to shutdown, so animaEngine is built to cost next to nothing while nothing
-        moves.
-      </SectionHeader>
+      <div class="section-intro">
+        <h2 id="arch-title">Quiet when nothing moves</h2>
+        <p>A desktop companion runs from login to shutdown, so animaEngine is built to cost next to nothing while it waits.</p>
+      </div>
       <ArchitectureSection />
     </div>
   </section>
 
-  <section class="section download-cta" id="download" aria-labelledby="download-title">
-    <div class="container">
-      <SectionHeader id="download-title" eyebrow="Download" title="Get animaEngine" center>
-        {
-          ctx.latest ? (
-            <>
-              Version {ctx.latest.version}, released <time datetime={isoDay(ctx.latest.publishedAt)}>{formatDate(ctx.latest.publishedAt)}</time>.
-              Free and open source.
-            </>
-          ) : (
-            <>No downloadable release has been published yet.</>
-          )
-        }
-      </SectionHeader>
-      <div class="platforms">
-        {
-          PLATFORM_OSES.map((os) => (
-            <PlatformDownloads
-              os={os}
-              options={ctx.downloads[os]}
-              version={ctx.latest?.version ?? null}
-              releasesUrl={ctx.releasesUrl}
-              detail="compact"
-            />
-          ))
-        }
+  <section class="get" id="download" aria-labelledby="download-title">
+    <Stage scenery="ledge" cast={ledgeCast} entrance="none" size={{ wide: 76, narrow: 60 }}>
+      <div class="container get-inner">
+        <div class="get-head">
+          <h2 id="download-title">Get animaEngine{version && ` ${version}`}</h2>
+          <p>
+            {
+              ctx.latest ? (
+                <>
+                  Released <time datetime={isoDay(ctx.latest.publishedAt)}>{formatDate(ctx.latest.publishedAt)}</time>. Free and
+                  open source under the MIT licence.
+                </>
+              ) : (
+                <>No downloadable release has been published yet.</>
+              )
+            }
+          </p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="/download/" data-os-cta>
+              <Icon name="download" />
+              <span data-os-cta-label>Download</span>
+            </a>
+            <a class="link" href="/download/#verify">Checksums and install steps</a>
+          </div>
+        </div>
+        <div class="get-list">
+          {
+            PLATFORM_OSES.map((os) => (
+              <PlatformDownloads
+                os={os}
+                options={ctx.downloads[os]}
+                version={version ?? null}
+                releasesUrl={ctx.releasesUrl}
+                detail="compact"
+              />
+            ))
+          }
+        </div>
       </div>
-      <div class="cta-links">
-        <a class="link-arrow" href="/download/">Checksums, install steps and file details <Icon name="arrow-right" /></a>
-        <a class="link-arrow" href="/docs/installation/#from-source">Build from source <Icon name="arrow-right" /></a>
-        <a class="link-arrow" href={ctx.latest?.url ?? ctx.releasesUrl} rel="noopener noreferrer">Release on GitHub <Icon name="external" /></a>
-      </div>
-    </div>
+    </Stage>
   </section>
 </BaseLayout>
 
 <style>
-  .hero {
-    position: relative;
-    padding-block: clamp(48px, 7vw, 96px) clamp(120px, 12vw, 170px);
-    overflow: hidden;
-    background:
-      radial-gradient(60% 70% at 85% 10%, rgb(107 79 216 / 0.32), transparent 70%),
-      radial-gradient(40% 50% at 0% 0%, rgb(143 200 255 / 0.08), transparent 70%),
-      linear-gradient(180deg, var(--bg) 0%, #151027 100%);
+  /* ---------- Hero: the desktop ---------- */
+  /* The whole desktop fits the first screen: sky, copy, hills, characters. */
+  :global(.stage.hero) {
+    min-height: clamp(600px, calc(100svh - var(--header-h)), 900px);
   }
 
-  .hero-grid {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
-    gap: clamp(32px, 5vw, 72px);
-    align-items: center;
+  .hero-inner {
+    flex: 1;
+    padding-block: clamp(40px, 8vh, 104px) calc(clamp(160px, 24vh, 260px) + 16px);
   }
 
-  .hero-copy .lead {
-    max-width: 34rem;
-    margin-bottom: 28px;
+  .hero-copy {
+    max-width: 44rem;
+  }
+
+  .hero-copy h1 {
+    max-width: 11em;
+    font-size: clamp(2.6rem, 1.4rem + 3.6vw, 4.4rem);
+    font-weight: 720;
+    letter-spacing: -0.028em;
+    line-height: 1;
+    margin-bottom: var(--s-5);
+  }
+
+  .hero-lead {
+    max-width: 33rem;
+    margin-bottom: var(--s-6);
+    color: var(--haze);
+    font-size: var(--t-lg);
+    line-height: 1.5;
   }
 
   .hero-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 24px 0 0;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-
-  .hero-meta span {
-    padding: 2px 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: rgb(31 28 42 / 0.6);
+    margin: var(--s-5) 0 0;
+    color: var(--haze);
+    font-size: var(--t-sm);
   }
 
   .hero-note {
-    margin: 12px 0 0;
-    color: var(--warn);
-    font-size: 0.92rem;
+    margin: var(--s-2) 0 0;
+    color: var(--star);
+    font-size: var(--t-sm);
   }
 
-  .hero-media {
-    position: relative;
-  }
-
-  .glow {
+  /* A small caption on the grass, out of the characters' way. */
+  .stage-hint {
     position: absolute;
-    inset: 8% 6% -4%;
-    background: radial-gradient(closest-side, rgb(154 131 255 / 0.45), transparent);
-    filter: blur(40px);
+    left: 0;
+    right: 0;
+    bottom: var(--s-4);
+    margin: 0;
+    display: flex;
+    justify-content: flex-end;
     pointer-events: none;
   }
 
-  .hero-media :global(.frame) {
-    position: relative;
-    box-shadow:
-      0 0 0 1px rgb(154 131 255 / 0.25),
-      0 40px 90px -30px rgb(0 0 0 / 0.8);
+  .stage-hint span {
+    max-width: none;
+    color: var(--mist);
+    font-size: var(--t-xs);
+    text-align: right;
   }
 
-  .media-note {
-    position: relative;
-    margin: 12px 0 0;
-    color: var(--faint);
-    font-size: 0.85rem;
+  /* ---------- Sections ---------- */
+  .acts-section {
+    background: linear-gradient(180deg, var(--hill-near) 0, var(--night) 360px);
+  }
+
+  .roster {
+    background: var(--dusk);
+  }
+
+  .how {
+    border-top: 1px solid var(--line-soft);
   }
 
   .more {
-    margin: 32px 0 0;
+    margin: var(--s-7) 0 0;
+    font-weight: 700;
   }
 
-  .platforms {
+  /* ---------- Download band, with characters on its edge ---------- */
+  .get {
+    padding-top: var(--s-7);
+  }
+
+  .get-inner {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 20px;
-    align-items: stretch;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--s-6) clamp(32px, 6vw, 96px);
+    padding-block: 168px clamp(72px, 9vw, 120px);
   }
 
-  .cta-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px 32px;
-    margin-top: 32px;
+  .get-head h2 {
+    font-size: var(--t-3xl);
+    letter-spacing: -0.03em;
   }
 
-  .download-cta {
-    background: radial-gradient(60% 50% at 50% 0%, rgb(107 79 216 / 0.18), transparent 70%);
+  .get-head p {
+    color: var(--haze);
   }
 
-  @media (max-width: 1100px) {
-    .platforms {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .get-head .btn-row {
+    margin-top: var(--s-5);
+    gap: var(--s-5);
   }
 
-  @media (max-width: 1000px) {
-    .hero-grid {
+  .get-list > :global(.platform:first-child) {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  @media (max-width: 960px) {
+    .get-inner {
       grid-template-columns: minmax(0, 1fr);
     }
   }
 
-  @media (max-width: 640px) {
-    .platforms {
-      grid-template-columns: minmax(0, 1fr);
+  @media (max-width: 720px) {
+    :global(.stage.hero) {
+      min-height: 0;
+    }
+
+    .hero-inner {
+      padding-bottom: 300px;
+    }
+
+    .stage-hint span {
+      max-width: 22ch;
     }
   }
 </style>

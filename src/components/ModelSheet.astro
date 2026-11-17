@@ -1,0 +1,272 @@
+---
+/**
+ * The ten built-in characters as an animator's model sheet: the line-up on a
+ * baseline, and for the chosen character the actual sprite sheet the app
+ * uses, its twelve frames laid out, playing. Without JavaScript the line-up
+ * is a plain list of the characters.
+ */
+import { getImage, Image } from 'astro:assets';
+import { CHARACTER_STATES, characters } from '../data/media';
+import { FRAME_PX, sheetUrl } from '../data/stage';
+import { jsonForHtml } from '../lib/site-downloads';
+import Icon from './Icon.astro';
+
+const data = await Promise.all(
+  characters.map(async (c) => ({
+    name: c.name,
+    label: c.label,
+    sheets: {
+      idle: await sheetUrl(c.name, 'idle'),
+      walk: await sheetUrl(c.name, 'walk'),
+      drag: await sheetUrl(c.name, 'drag'),
+      fall: await sheetUrl(c.name, 'fall'),
+    },
+    sleep: (await getImage({ src: c.asleep, width: FRAME_PX, format: 'webp', quality: 80 })).src,
+  })),
+);
+const payload = jsonForHtml({ characters: data, states: CHARACTER_STATES });
+const first = data.find((c) => c.name === 'cat')!;
+---
+
+<div class="sheet" data-model-sheet>
+  <script type="application/json" data-model-data set:html={payload} />
+
+  <ul class="lineup" data-lineup>
+    {
+      characters.map((c) => (
+        <li>
+          <span class="pick" data-pick={c.name} aria-pressed={c.name === first.name ? 'true' : undefined}>
+            <Image src={c.still} width={96} height={96} widths={[96, 192]} sizes="96px" format="webp" alt="" loading="lazy" decoding="async" />
+            <span class="name">{c.label}</span>
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="detail" data-detail hidden>
+    <div class="preview">
+      <div class="preview-sprite" data-preview></div>
+      <button class="play" type="button" data-play>
+        <Icon name="pause" size={18} />
+        <span data-play-text>Pause</span>
+      </button>
+    </div>
+
+    <div class="study">
+      <p class="study-title" data-study-title aria-live="polite">{first.label}, standing</p>
+      <div class="states" role="group" aria-label="What it is doing">
+        {
+          CHARACTER_STATES.map((s, i) => (
+            <button type="button" data-state={s.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+              {s.label}
+            </button>
+          ))
+        }
+      </div>
+      <figure class="strip-figure">
+        <div class="strip" data-strip-wrap>
+          <img data-strip src={first.sheets.idle} width={FRAME_PX * 12} height={FRAME_PX} alt="" loading="lazy" decoding="async" />
+          <span class="frame-mark" data-frame-mark aria-hidden="true"></span>
+        </div>
+        <figcaption data-strip-caption>The app's idle sheet: twelve frames, played in a loop.</figcaption>
+      </figure>
+    </div>
+  </div>
+</div>
+
+<script>
+  import '../scripts/model-sheet';
+</script>
+
+<style>
+  .lineup {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 var(--s-2);
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: var(--s-2);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pick {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: var(--s-2) 0 0;
+    border-radius: var(--r-control);
+    color: var(--haze);
+    font-size: var(--t-sm);
+    font-weight: 700;
+  }
+
+  .pick :global(img) {
+    width: 100%;
+    max-width: 96px;
+    height: auto;
+    aspect-ratio: 1;
+    transition: translate var(--dur-base) var(--ease-out);
+  }
+
+  .lineup.ready .pick {
+    cursor: pointer;
+  }
+
+  .lineup.ready .pick:hover :global(img) {
+    translate: 0 -4px;
+  }
+
+  .pick[aria-pressed='true'] {
+    color: var(--moon);
+  }
+
+  .pick[aria-pressed='true'] .name {
+    text-decoration: underline 2px var(--star);
+    text-underline-offset: 6px;
+  }
+
+  .detail {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(24px, 4vw, 56px);
+    margin-top: var(--s-7);
+    align-items: start;
+  }
+
+  .preview {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: var(--r-media);
+    background:
+      radial-gradient(circle at 50% 108%, var(--hill-far) 0 46%, transparent 46.5%),
+      linear-gradient(180deg, var(--sky-top), var(--sky-low));
+    overflow: hidden;
+  }
+
+  .preview-sprite {
+    width: 60%;
+    aspect-ratio: 1;
+    background-repeat: no-repeat;
+    background-size: 1200% 100%;
+    translate: 0 6%;
+  }
+
+  .preview-sprite.still {
+    background-size: 100% 100%;
+  }
+
+  .play {
+    position: absolute;
+    right: var(--s-3);
+    bottom: var(--s-3);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 6px 12px;
+    border: 1px solid rgb(243 239 255 / 0.25);
+    border-radius: var(--r-control);
+    background: rgb(21 16 42 / 0.7);
+    color: var(--moon);
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .study-title {
+    margin: 0 0 var(--s-4);
+    font-family: var(--display);
+    font-size: var(--t-xl);
+    font-weight: 760;
+    letter-spacing: -0.015em;
+  }
+
+  .states {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-bottom: var(--s-6);
+  }
+
+  .states button {
+    min-height: 40px;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-control);
+    background: transparent;
+    color: var(--haze);
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .states button:hover {
+    color: var(--moon);
+    border-color: var(--haze);
+  }
+
+  .states button[aria-pressed='true'] {
+    border-color: var(--star);
+    color: var(--moon);
+  }
+
+  .strip-figure {
+    margin: 0;
+  }
+
+  /* The sheet itself, on a checkerboard so its transparency shows. */
+  .strip {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: #1a1433;
+    background-image:
+      linear-gradient(45deg, #211a3e 25%, transparent 25%, transparent 75%, #211a3e 75%),
+      linear-gradient(45deg, #211a3e 25%, transparent 25%, transparent 75%, #211a3e 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+    overflow: hidden;
+  }
+
+  .strip img {
+    width: 100%;
+    height: auto;
+  }
+
+  .frame-mark {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: calc(100% / 12);
+    border: 2px solid var(--star);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .strip-figure figcaption {
+    margin-top: var(--s-3);
+    color: var(--mist);
+    font-size: var(--t-sm);
+  }
+
+  @media (max-width: 860px) {
+    .lineup {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      row-gap: var(--s-4);
+    }
+
+    .detail {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .preview {
+      max-width: 320px;
+    }
+  }
+</style>
